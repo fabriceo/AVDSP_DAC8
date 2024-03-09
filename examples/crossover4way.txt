@@ -13,9 +13,9 @@
 
 ### constant declaration. "?" means the value will be set if not provided as a command line option
 
-FCUT	?= 400    # default cutoff frequency (FCUT can be provided as an option on the dspcreate comandline)
-DIST	?= 100    # assuming the high driver is ahead of the low driver by 100 millimeters, requiring a delay line.
-GAIN	?= -2db   # a reduction of -2db is applied on the high drivers to compensate sensitivity
+FCUT ? 401    # default cutoff frequency (FCUT can be provided as an option on the dspcreate comandline)
+DIST ? 101    # assuming the high driver is ahead of the low driver by 100 millimeters, requiring a delay line.
+GAIN ? -2db   # a reduction of -2db is applied on the high drivers to compensate sensitivity
 
 DELAY	= 1000 * DIST / 343		# compute delay in microseconds, considering DIST in millimeter and sound speed 343 m/sec
 
@@ -32,7 +32,7 @@ USBhost		16
 USBdevice	24
 
 LeftIn		= USBhost[0]	# left audio is given from USB host on the first channel (starting 0)
-RigthIn		= USBhost[1]	# right audio channel from USB host
+RightIn		= USBhost[1]	# right audio channel from USB host
 
 ### dsp program start here, after user variable declaration, with "core" instruction
 
@@ -49,7 +49,6 @@ input LeftIn
 biquad Highpass
 delayus DELAY					# apply delay line on result
 outputgain ( DAC[3] , GAIN )	# apply final reduction gain
-output USBdevice[3]				# provide loopback for measurement during test
 
 core					# the dsp workload is spread over 2 cores. Second core program starts here
 input RightIn
@@ -60,6 +59,7 @@ input RightIn
 biquad Highpass
 delayus DELAY
 outputgain ( DAC[5] , GAIN )
+output USBdevice[3]		# provide loopback for measurement during test, from core 2 to verify its running :)
 
 end						# dsp program ends here. any text below is ignored
 
