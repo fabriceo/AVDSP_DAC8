@@ -1,5 +1,5 @@
 # AVDSP_DAC8
-AVDSP for DAC8PRO and DAC8STEREO
+## AVDSP for DAC8PRO and DAC8STEREO / usb tools
 
 This repository contains utilities to interact with DAC8PRO or DAC8STEREO from the host computer over usb.
 
@@ -18,7 +18,7 @@ To be able to use the usbtool, it is then required to uninstall the Thesycon dri
 for other platform, the usbtools is using libusb. this is provided for osx, but for linux this must be installed upfront by the user with the linux package manager.
 
 
-REMARK:
+## REMARK:
 for windows, uninstalling and reinstalling the Thesycon audio driver during dsp program devlopement is a borring exercise. 
 The dsp firmware includes a specific process to reboot as an usb device with another VID-PID wich gives the possibility to interact with usbtool in a seamless way.
 see other document for more information.
