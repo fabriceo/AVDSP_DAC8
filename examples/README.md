@@ -4,10 +4,10 @@ AVDSP for DAC8PRO and DAC8STEREO
 This repository contains few examples ready for generating binary program with dspcreate
 
 file ending with .txt contains macros and can be processed directly with the following command:
-dspcreate <options> -dsptext myfile.txt -binfile mytarget.bin <defines>
+dspcreate options -dsptext myfile.txt -binfile mytarget.bin defines
 
-<options> are explained in the documentation of the dspcreate utility
-<defines> is a list of statement which will be added virtually at the top of the text file before processing it.
+options are explained in the documentation of the dspcreate utility
+defines is a list of statement which will be added virtually at the top of the text file before processing it.
 this gives the possibility to set or force some variable like cutoff frequency or delays or gains
 
 files provided as c source code must be compiled with any C compiler able to generate a dynamic library file that will be used by dspcreate.
