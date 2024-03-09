@@ -1,0 +1,65 @@
+### example of 4 ways crossover with avdsp macros 
+###
+### pass through for channel 1 & 2 (headset)
+### low pass stereo on channel 3 & 4
+### high pass stereo on channel 5 & 6
+### nothing on channel 7 & 8
+### 
+### command line to generate binary file:
+###
+###   dspcreate -dspformat 2 -dspbasic crossover4way.txt -binfile crossover4way.bin -DFCUT=450
+###
+###
+
+### constant declaration. "?" means the value will be set if not provided as a command line option
+
+FCUT	?= 400    # default cutoff frequency (FCUT can be provided as an option on the dspcreate comandline)
+DIST	?= 100    # assuming the high driver is ahead of the low driver by 100 millimeters, requiring a delay line.
+GAIN	?= -2db   # a reduction of -2db is applied on the high drivers to compensate sensitivity
+
+DELAY	= 1000 * DIST / 343		# compute delay in microseconds, considering DIST in millimeter and sound speed 343 m/sec
+
+## filter definition, combined with 2 equalizations. first gain of -1db  in LR4 is used to compensate +1db PEAK in this exemple
+
+Lowpass		LPLR4( FCUT, -1db ) PEAK (  50, 1 , -3db) PEAK ( 100, 1 , +1db)
+Highpass	HPLR4( FCUT, -1db ) PEAK (1000, 1 , -3db) PEAK (2000, 1 , +1db)
+
+### IOs declaration (always start with an uppercase letter...)
+
+DAC			0
+AES			8
+USBhost		16
+USBdevice	24
+
+LeftIn		= USBhost[0]	# left audio is given from USB host on the first channel (starting 0)
+RigthIn		= USBhost[1]	# right audio channel from USB host
+
+### dsp program start here, after user variable declaration, with "core" instruction
+
+core
+transfer ( USBhost , USBdevice )		# loopback on first channel to provide a reference during tests
+transfer ( LeftIn , DAC[0] ) ( RightIn , DAC[1] )	# transfer usb stereo straight to headset outputs
+
+input LeftIn			# load audio sample into dsp ALU
+biquad Lowpass			# apply lowpass filter and equalization
+output DAC[2]			# send to dac2
+output USBdevice[2]		# provide loopback for measurement during test
+
+input LeftIn
+biquad Highpass
+delayus DELAY					# apply delay line on result
+outputgain ( DAC[3] , GAIN )	# apply final reduction gain
+output USBdevice[3]				# provide loopback for measurement during test
+
+core					# the dsp workload is spread over 2 cores. Second core program starts here
+input RightIn
+biquad Lowpass			# same filter 
+output DAC[4]			# no need to loop back to usb host as the result would be same
+
+input RightIn
+biquad Highpass
+delayus DELAY
+outputgain ( DAC[5] , GAIN )
+
+end						# dsp program ends here. any text below is ignored
+
