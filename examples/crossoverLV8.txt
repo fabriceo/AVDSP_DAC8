@@ -1,0 +1,16 @@
+fc		600
+bessel8	LPBE8(fc)
+gd	=	986000/fc	#group delay for bessel8 at fc
+core	
+	input 16	#get sample from usb channel 1
+	copyxy		#copy X into Y
+	output 24	#feedback to usb for reference
+	biquad bessel8	#compute lowpass
+	output 25	#output to usb channel 2
+	swapxy	#getback Y into X
+	delaydpus gd	#dual precision delay line
+	subxy		#compute high pass
+	output 26	#output to usb channel 3
+	addxy		#sum signals to check resulting wave
+	output 27	#output to usb channel 4
+end

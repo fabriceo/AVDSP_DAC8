@@ -1,0 +1,14 @@
+sum		MEMORY 1
+coef	0.6
+
+core
+	input 16
+	output 24
+	gain coef
+	copyxy
+	loadxmem sum
+	gain 1-coef
+	addxy
+	savexmem sum
+	output 25
+end

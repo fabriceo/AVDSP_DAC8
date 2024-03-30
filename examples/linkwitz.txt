@@ -1,0 +1,24 @@
+
+
+fhpbu	HPBU2(500)
+
+flt		LT(500,0.707,250,0.577)
+
+fhpbe	HPBE2(250)
+
+ft		HPBU2(500) LT(500,0.707,250,0.577) 
+
+core
+	input 16
+	output 24
+	biquad fhpbu
+	output 25
+	biquad flt
+	output 26
+	input 16
+	biquad fhpbe
+	output 27
+	input 16
+	biquad ft
+	output 28
+end

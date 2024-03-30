@@ -1,0 +1,116 @@
+## maximum cpu load
+## 192k : 12 biquad section per core
+##  96k : 28 biquad section per core
+##  48k : 68 biquad section per core
+##
+
+
+fc	100
+filt1	LPLR8(fc) LPLR8(fc) LPLR6(fc)	#12 biquad section
+filt2	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) #28 biquad section
+
+core4exist	x1000
+core5exist	x2000
+core6exist	x4000
+core7exist	x8000
+fs48k		b11100000
+fs96k		b11010000
+fs192k		b10110000
+any			15
+
+x200	200
+
+core	#1
+	input 16
+	output 24
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 25
+
+core	#2
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 26
+
+core	#3
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 27
+
+core	core4exist
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 28
+
+core	core5exist
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 29
+
+core	core6exist
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 30
+
+core	core7exist
+	input 16
+	section any,fs192k
+	biquad filt1
+	section any,fs96k
+	biquad filt2
+	section any,fs48k
+	biquad filt1
+	biquad filt2
+	biquad filt2
+	section
+	output 31
+
+end
+	
