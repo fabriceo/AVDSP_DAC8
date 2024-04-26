@@ -28,5 +28,9 @@ Yes, the DAC8 DSP firmware is installed in flash memory after the original facto
 ### 6) My DSP program is very complex and requires lots of instructions. Can I still use it for 192khz music program ?
 When loading or launching a DSP program, the DAC8 product will test the DSP treatment duration for one sample. If it appears that the duration is not compatible with the current sampling rate then a process of decimation is used to reduce the sampling rate by half or even fourth. This decimation process is acceptable but it is recommended to send the music program at a sampling rate compatible with the DSP cpu load, or to downsample the music program upfront on the host player with higher precision. The utility provided gives the exact cpu instructions required per each core and a load purcentage compared to sampling rate.
 
+### Whats about DSD ?
+DSD audio stream cannot be treated as such by a DSP, therefore any DSD audio signal will be converted to silence when a DSP program is selected in the filter menu. It is usually possible to convert DSD music program as a PCM program on the Host player.
+
+
 more to come
 

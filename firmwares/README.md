@@ -22,7 +22,10 @@ A ) maximum 48khz, supporting 4 AES inputs (8 channels)
 B ) maximum 96khz, supporting a single AES input (2 channels)
 a specific version can be provided for OEM with other configuration and sampling rates up to 192khz.
 
-DSD audio stream cannot be treated by DSP, therefore any DSD audio signal will be converted to silence
+## Where are the firmwares ??
+For the time being we send the firmware to any DAC8 product owner just requiring it by email to the support adress avdspproject@gmail.com
+Please provide your serial number and DAC model and a short summary of your project. You will receive the binary firmware file free of charge and configured for your serial number.
+
 
 more to come
 
