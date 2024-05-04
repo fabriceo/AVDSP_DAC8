@@ -1,0 +1,22 @@
+# example spreading 2 channel over 5
+
+USB		16
+USBin	24
+DAC		0
+
+core
+	transfer (USB, USBin)	#provide a feedback for reference when testing with REW
+	transfer (USB[0],DAC[0]) (USB[1],DAC[1])	#direct copy of usb stream to dacs
+	
+	mixergain (USB[0],-3db) (USB[1],-3db)
+	output DAC[2]			#center channel
+	
+	input USB[1]			#load right
+	swapxy					#store in Y
+	input USB[0]			#load left
+	subxy					# calc X = X - Y
+	output DAC[3]			#surround signa is sent to 2 other channels
+	output DAC[4]
+	
+end
+

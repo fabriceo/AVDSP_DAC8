@@ -1,53 +1,58 @@
 ### IO definitions for DAC8PRO
-### each channels between 0..7
+### each channels between 1..8
+
+DAC		0
+AES		8
+USBOUT	16
+USBIN	24
 
 ### to DAC outputs
 
 dac		0
-dac0	= dac[0]
-dac1	= dac[1]
-dac2	= dac[2]
-dac3	= dac[3]
-dac4	= dac[4]
-dac5	= dac[5]
-dac6	= dac[6]
-dac7	= dac[7]
+dac1	= dac[0]
+dac2	= dac[1]
+dac3	= dac[2]
+dac4	= dac[3]
+dac5	= dac[4]
+dac6	= dac[5]
+dac7	= dac[6]
+dac8	= dac[7]
 
 ### from AES channels
 
 aes		8
-aes0	= aes[0]
-aes1	= aes[1]
-aes2	= aes[2]
-aes3	= aes[3]
-aes4	= aes[4]
-aes5	= aes[5]
-aes6	= aes[6]
-aes7	= aes[7]
+aes1	= aes[0]
+aes2	= aes[1]
+aes3	= aes[2]
+aes4	= aes[3]
+aes5	= aes[4]
+aes6	= aes[5]
+aes7	= aes[6]
+aes8	= aes[7]
 
 ### form USB host
 
 usbout	16
-usbout0	= usbout[0]
-usbout1	= usbout[1]
-usbout2	= usbout[2]
-usbout3	= usbout[3]
-usbout4	= usbout[4]
-usbout5	= usbout[5]
-usbout6	= usbout[6]
-usbout7	= usbout[7]
+usbout1	= usbout[0]
+usbout2	= usbout[1]
+usbout3	= usbout[2]
+usbout4	= usbout[3]
+usbout5	= usbout[4]
+usbout6	= usbout[5]
+usbout7	= usbout[6]
+usbout8	= usbout[7]
 
 ### to USB host
 
 usbin	24
-usbin0	= usbin[0]
-usbin1	= usbin[1]
-usbin2	= usbin[2]
-usbin3	= usbin[3]
-usbin4	= usbin[4]
-usbin5	= usbin[5]
-usbin6	= usbin[6]
-usbin7	= usbin[7]
+usbin1	= usbin[0]
+usbin2	= usbin[1]
+usbin3	= usbin[2]
+usbin4	= usbin[3]
+usbin5	= usbin[4]
+usbin6	= usbin[5]
+usbin7	= usbin[6]
+usbin8	= usbin[7]
 
 ### various constants
 
