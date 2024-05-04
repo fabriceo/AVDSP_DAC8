@@ -1,22 +1,49 @@
+# 20240504 for v1.6
 # example spreading 2 channel over 5
+# and driving a sub on channel 6
 
 USB		16
 USBin	24
 DAC		0
 
+fsub	80				#80hz
+lpsub	LPBU4(fsub)		#lowpass filter
+hpsub	HPBU4(fsub)		#high pass filter
+
 core
 	transfer (USB, USBin)	#provide a feedback for reference when testing with REW
-	transfer (USB[0],DAC[0]) (USB[1],DAC[1])	#direct copy of usb stream to dacs
 	
 	mixergain (USB[0],-3db) (USB[1],-3db)
 	output DAC[2]			#center channel
+	output USBin[1]			#feedback to USB host for test in REW
+	
+	biquad lpsub			#apply low pass on summed signal
+	outputgain (DAC[5],-10db)		#store for subwoofer
 	
 	input USB[1]			#load right
 	swapxy					#store in Y
 	input USB[0]			#load left
 	subxy					# calc X = X - Y
-	output DAC[3]			#surround signa is sent to 2 other channels
+	output DAC[3]			#surround signal is sent to 2 other channels
 	output DAC[4]
+
+	input USB[0]			#load left
+	biquad hpsub			#apply high pass
+	output DAC[0]			#store DAC for left chanel
+
+	input USB[1]			#load rigth
+	biquad hpsub			#apply high pass
+	output DAC[1]			#store DAC for right channel
+
 	
 end
 
+./dspcreate -dspformat 28 -dsptext /AVDSP_DAC8/users_examples/S_20_2ch_to_5ch.txt -binfile example.bin
+
+dsptotallength = 220
+dataSize       = 68
+check sum      = 0x13B00DB
+cores declared = 1
+max encoded    = 1.997995 = 2:30 vs 4:28
+DSP program file successfully generated 
+stored in-> example.bin
