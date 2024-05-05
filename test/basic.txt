@@ -1,0 +1,168 @@
+### example of 4 ways crossover with avdsp macros 
+###
+### pass through for channel 1 & 2 (headset)
+### low pass stereo on channel 3 & 4
+### high pass stereo on channel 5 & 6
+### nothing on channel 7 & 8
+### 
+### command line to generate binary file:
+###
+###   dspcreate -dspformat 2 -dspbasic crossover4way.txt -binfile crossover4way.bin -DFCUT=450
+###
+###
+
+### constant declaration. "?" means the value will be set if not provided as a command line option
+
+FCUT ? 401    # default cutoff frequency (FCUT can be provided as an option on the dspcreate comandline)
+DIST ? 101    # assuming the high driver is ahead of the low driver by 100 millimeters, requiring a delay line.
+GAIN ? -2db   # a reduction of -2db is applied on the high drivers to compensate sensitivity
+
+DELAY	= 1000 * DIST / 343		# compute delay in microseconds, considering DIST in millimeter and sound speed 343 m/sec
+
+## filter definition, combined with 2 equalizations. first gain of -1db  in LR4 is used to compensate +1db PEAK in this exemple
+
+Lowpass		LPLR4( FCUT, -1db ) PEAK (  50, 1 , -3db) PEAK ( 100, 1 , +1db)
+Highpass	HPLR4( FCUT, -1db ) PEAK (1000, 1 , -3db) PEAK (2000, 1 , +1db)
+
+### IOs declaration (always start with an uppercase letter...)
+
+DAC			0
+AES			8
+USBhost		16
+USBdevice	24
+
+LeftIn		= USBhost[0]	# left audio is given from USB host on the first channel (starting 0)
+RightIn		= USBhost[1]	# right audio channel from USB host
+
+### dsp program start here, after user variable declaration, with "core" instruction
+
+core
+transfer ( USBhost , USBdevice )		# loopback on first channel to provide a reference during tests
+transfer ( LeftIn , DAC[0] ) ( RightIn , DAC[1] )	# transfer usb stereo straight to headset outputs
+
+input LeftIn			# load audio sample into dsp ALU
+biquad Lowpass			# apply lowpass filter and equalization
+output DAC[2]			# send to dac2
+output USBdevice[2]		# provide loopback for measurement during test
+
+input LeftIn
+biquad Highpass
+delayus DELAY					# apply delay line on result
+outputgain ( DAC[3] , GAIN )	# apply final reduction gain
+
+core					# the dsp workload is spread over 2 cores. Second core program starts here
+input RightIn
+biquad Lowpass			# same filter 
+output DAC[4]			# no need to loop back to usb host as the result would be same
+
+input RightIn
+biquad Highpass
+delayus DELAY
+outputgain ( DAC[5] , GAIN )
+output USBdevice[3]		# provide loopback for measurement during test, from core 2 to verify its running :)
+
+end						# dsp program ends here. any text below is ignored
+
+########################## output for information only
+
+
+./dspcreate -dspformat 28 -dsptext crossover4way.txt -binfile crossover4way.bin FCUT=450 DIST=100
+DSP ENCODER : format generated for handling integer 64 bits, with 28 bits mantissa
+reading file /Users/Fabrice/AVDSP_DAC8/examples/crossover4way.txt
+   0 : [#1 +12] 0 0 0 0 102 40001C 4 9 0 0 0 
+DSP_PARAM
+option 0 FCUT=450
+label FCUT type 3 created with value 450.000000
+option 1 DIST=100
+label DIST type 3 created with value 100.000000
+label FCUT type 3 already set with value 450.000000
+label DIST type 3 already set with value 100.000000
+label GAIN type 2 created with value 0.794328
+label DELAY type 1 created with value 291.545190
+  12 : [#2 +0] 
+
+  13 : biquad section
+filter Lowpass type LPLR4 created with F=450.000000, Q=1.000000, G=0.891251
+FILTER f = 450.000000, Q = 0.707107, G = 0.891251
+ b0 = 0.000876,  b1 = 0.001752, b2 = 0.000876, a1 = 1.909387,  a2 = -0.913318
+FILTER f = 450.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.000983,  b1 = 0.001966, b2 = 0.000983, a1 = 1.909387,  a2 = -0.913318
+filter Lowpass type PEAK created with F=50.000000, Q=1.000000, G=0.707946
+FILTER f = 50.000000, Q = 1.000000, G = 0.707946
+ b0 = 0.998769,  b1 = -1.991519, b2 = 0.992800, a1 = 1.991519,  a2 = -0.991569
+filter Lowpass type PEAK created with F=100.000000, Q=1.000000, G=1.122018
+FILTER f = 100.000000, Q = 1.000000, G = 1.122018
+ b0 = 1.000815,  b1 = -1.986438, b2 = 0.985825, a1 = 1.986438,  a2 = -0.986640
+-> 4 biquad cell(s) provided
+
+ 167 : biquad section
+filter Highpass type HPLR4 created with F=450.000000, Q=1.000000, G=0.891251
+FILTER f = 450.000000, Q = 0.707107, G = 0.891251
+ b0 = 0.851747,  b1 = -1.703495, b2 = 0.851747, a1 = 1.909387,  a2 = -0.913318
+FILTER f = 450.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.955676,  b1 = -1.911353, b2 = 0.955676, a1 = 1.909387,  a2 = -0.913318
+filter Highpass type PEAK created with F=1000.000000, Q=1.000000, G=0.707946
+FILTER f = 1000.000000, Q = 1.000000, G = 0.707946
+ b0 = 0.977274,  b1 = -1.825683, b2 = 0.867097, a1 = 1.825683,  a2 = -0.844371
+filter Highpass type PEAK created with F=2000.000000, Q=1.000000, G=1.122018
+FILTER f = 2000.000000, Q = 1.000000, G = 1.122018
+ b0 = 1.014294,  b1 = -1.694502, b2 = 0.751409, a1 = 1.694502,  a2 = -0.765704
+label DAC type 3 created with value 0.000000
+label AES type 3 created with value 8.000000
+label USBhost type 3 created with value 16.000000
+label USBdevice type 3 created with value 24.000000
+label LeftIn type 3 created with value 16.000000
+label RightIn type 3 created with value 17.000000
+-> 4 biquad cell(s) provided
+DSP_CORE
+ 321 : [#5 +7] 0 0 0 0 FFFFFFFF(@320) 0 
+DSP_LOAD_STORE
+ 328 : [#9 +3] 10 18 
+DSP_LOAD_STORE
+ 331 : [#9 +5] 10 0 11 1 
+DSP_LOAD
+ 336 : [#7 +2] 10 
+DSP_BIQUADS
+ 338 : [#50 +3] 20 FFFFFEBB(@13) 
+DSP_STORE
+ 341 : [#8 +2] 2 
+DSP_STORE
+ 343 : [#8 +2] 1A 
+DSP_LOAD
+ 345 : [#7 +2] 10 
+DSP_BIQUADS
+ 347 : [#50 +3] 38 FFFFFF4C(@167) 
+DSP_DELAY
+DELAY 291 -> MAXSAMPLE = 55
+ 350 : [#48 +4] 123 50 0 
+DSP_STORE_GAIN
+ 354 : [#11 +4] 3 3 CB59180 
+DSP_CORE
+ 358 : [#5 +7] 0 0 0 0 FFFFFFFF(@357) 0 
+DSP_LOAD
+ 365 : [#7 +2] 11 
+DSP_BIQUADS
+ 367 : [#50 +3] 88 FFFFFE9E(@13) 
+DSP_STORE
+ 370 : [#8 +2] 4 
+DSP_LOAD
+ 372 : [#7 +2] 11 
+DSP_BIQUADS
+ 374 : [#50 +3] A0 FFFFFF31(@167) 
+DSP_DELAY
+DELAY 291 -> MAXSAMPLE = 55
+ 377 : [#48 +4] 123 B8 0 
+DSP_STORE_GAIN
+ 381 : [#11 +4] 5 3 CB59180 
+DSP_STORE
+ 385 : [#8 +2] 1B 
+DSP_END_OF_CODE
+ 387 : [#0 +0] 
+dsptotallength = 388
+dataSize       = 240
+check sum      = 0x1990183
+cores declared = 2
+max encoded    = 1.998055 = 2:30 vs 4:28
+DSP program file successfully generated 
+
+
