@@ -6,7 +6,7 @@ This repository contains libraries and utilities to compile dsp programs written
 Binary files can be created with **dspcreate** utility, either from a simple text file containing a flow of avdsp macros, 
 or from a compiled object file originally written in C langage and using the **libavdspencoder** libray.
 
-dspcreate and the encoder library are provided for all operating system and must be launched from a terminal or shell window.
-The resulting binary file can be uploaded straight in the DAC8PRO or DAC8STEREO memory with the usbtool utility, and then saved to 4 flash memory location.
+**dspcreate** and the encoder library are provided for all operating system and must be launched from a terminal or shell window.
+The resulting binary file can be uploaded straight in the DAC8PRODSP or DAC8STEREODSP memory with the usbtool utility, and then saved to 4 flash memory locations.
 
-more to come
+May 5,2024
