@@ -1,13 +1,22 @@
 ## maximum cpu load
-## 192k : 12 biquad section per core
-##  96k : 28 biquad section per core
-##  48k : 68 biquad section per core
+## for 4 cores:
+## 192k : input + 9 biquad section  + delaydpus + output per core
+##  96k : input + 20 biquad section + delaydpus + output per core 
+##  48k : Double (input + 22 biquad section + delaydpus + output) per core
+##
+## 192K: dsp1 : 522 , dsp2 : 522 , dsp3 : 513,  dsp4 :  513 / 550 = 94%
+## 96K : dsp1 : 1015, dsp2 : 1015, dsp3 : 1007, dsp4 : 1007, dsp5/6/7 : 310/ 1100
+## 48K : dsp1 : 1980, dsp2 : 1980, dsp3 : 1971, dsp4 : 1971 / 2200
+##
 ##
 
 
-fc	100
-filt1	LPLR8(fc) LPLR8(fc) LPLR6(fc)	#12 biquad section
-filt2	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) #28 biquad section
+fc	10000
+filt192	LPLR8(fc) LPLR8(fc) LPLR2(fc)	#9 biquad section
+filt96	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc)  #20 biquad section
+filt48	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR4(fc) #22 biquad section
+fpaux	LPLR8(fc) LPLR8(fc) LPLR2(fc) #9 biquad
+mem		MEMORY 3
 
 core4exist	x1000
 core5exist	x2000
@@ -16,101 +25,208 @@ core7exist	x8000
 fs48k		b11100000
 fs96k		b11010000
 fs192k		b10110000
-any			15
+pureusb		1
+usbaes		4
+pureaes		8
+anyinput	15
 
-x200	200
+### 192K ###
 
-core	#1
+core	pureusb,fs192k	#1 - 100mips
+
 	input 16
+	biquad filt192
+	delaydpus 100
+	output 0
+	input 17
+	biquad filt192
+	delaydpus 100
+	output 1
+
+core	pureusb,fs192k	#2 - 100mips
+
+	input 18
+	biquad filt192
+	delaydpus 100
+	output 2
+	input 19
+	biquad filt192
+	delaydpus 100
+	output 3
+
+core	pureusb,fs192k	#3 - 100mips
+
+	input 20
+	biquad filt192
+	delaydpus 100
+	output 4
+	input 21
+	biquad filt192
+	delaydpus 100
+	output 5
+
+core	pureusb,fs192k	#4 - 100mips
+
+	input 22
+	biquad filt192
+	delaydpus 100
+	output 6
+	input 23
+	biquad filt192
+	delaydpus 100
+	output 7
+
+###  96K  ###
+
+core	pureusb,fs96k
+
+	input 16
+	biquad filt96
+	delaydpus 100
+	output 0
+	input 17
+	biquad filt96
+	delaydpus 100
+	output 1
+
+
+core	pureusb,fs96k
+
+	input 18
+	biquad filt96
+	delaydpus 100
+	output 2
+	input 19
+	biquad filt96
+	delaydpus 100
+	output 3
+
+core	pureusb,fs96k
+
+	input 20
+	biquad filt96
+	delaydpus 100
+	output 4
+	input 21
+	biquad filt96
+	delaydpus 100
+	output 5
+
+core	pureusb,fs96k
+
+	input 22
+	biquad filt96
+	delaydpus 100
+	output 6
+	input 23
+	biquad filt96
+	delaydpus 100
+	output 7
+
+###  48K  ###
+
+core	pureusb,fs48k
+
+	input 16
+	biquad filt48
+	delaydpus 100
+	output 0
+	input 17
+	biquad filt48
+	delaydpus 100
+	output 1
+	input 16
+	biquad filt48
+	delaydpus 100
 	output 24
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
+	input 17
+	biquad filt48
+	delaydpus 100
 	output 25
 
-core	#2
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
-	output 26
 
-core	#3
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
+core	pureusb,fs48k
+
+	input 18
+	biquad filt48
+	delaydpus 100
+	output 2
+	input 19
+	biquad filt48
+	delaydpus 100
+	output 3
+	input 18
+	biquad filt48
+	delaydpus 100
+	output 26
+	input 19
+	biquad filt48
+	delaydpus 100
 	output 27
 
-core	core4exist
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
-	output 28
+core	pureusb,fs48k
 
-core	core5exist
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
+	input 20
+	biquad filt48
+	delaydpus 100
+	output 4
+	input 21
+	biquad filt48
+	delaydpus 100
+	output 5
+	input 20
+	biquad filt48
+	delaydpus 100
+	output 28
+	input 21
+	biquad filt48
+	delaydpus 100
 	output 29
 
-core	core6exist
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
-	output 30
+core	pureusb,fs48k
 
-core	core7exist
-	input 16
-	section any,fs192k
-	biquad filt1
-	section any,fs96k
-	biquad filt2
-	section any,fs48k
-	biquad filt1
-	biquad filt2
-	biquad filt2
-	section
+	input 22
+	biquad filt48
+	delaydpus 100
+	output 6
+	input 23
+	biquad filt48
+	delaydpus 100
+	output 7
+	input 22
+	biquad filt48
+	delaydpus 100
+	output 30
+	input 23
+	biquad filt48
+	delaydpus 100
 	output 31
 
+
+core anyinput,fs96k
+	input 16
+	biquad fpaux
+	savexmem mem[0]
+
+core	anyinput,fs96k
+	input 16
+	biquad fpaux
+	savexmem mem[1]
+
+core	anyinput,fs96k
+	input 16
+	biquad fpaux
+	savexmem mem[2]
+
+
+core	anyinput,fs48k
+	input 16
+	biquad fpaux
+	savexmem mem[1]
+
+core	anyinput,fs48k
+	input 16
+	biquad fpaux
+	savexmem mem[2]
+
 end
-	

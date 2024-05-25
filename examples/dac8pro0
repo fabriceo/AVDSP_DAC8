@@ -6,6 +6,18 @@ AES		8
 USBOUT	16
 USBIN	24
 
+core4exist	x1000
+core5exist	x2000
+core6exist	x4000
+core7exist	x8000
+fs48k		b11100000
+fs96k		b11010000
+fs192k		b10110000
+pureusb		1
+usbaes		4
+pureaes		8
+anyinput	15
+
 ### to DAC outputs
 
 dac		0
