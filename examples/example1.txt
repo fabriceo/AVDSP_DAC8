@@ -7,8 +7,8 @@ USBIN1	24
 USBIN2	25
 
 core
-	transfer ( USBOUT1, USBIN1 )
-	mixergain ( USBOUT1 , 0.5 ) ( USBOUT2 , 0.5 )
+	transfer ( USBOUT1, USBIN1 )	#loopback for reference
+	mixergain ( USBOUT1 , 0.5 ) ( USBOUT2 , 0.5 )	#compute average left+right
 	output DAC1
 	output DAC2
 	output USBIN2

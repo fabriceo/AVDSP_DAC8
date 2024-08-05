@@ -12,21 +12,27 @@ core 3	#pureusb only
 	input USBOUT[1]
 	output USBIN[1]
 	output DAC[1]
+	
 	input USBOUT[2]
 	output USBIN[2]
 	output DAC[2]
+	
 	input USBOUT[3]
 	output USBIN[3]
 	output DAC[3]
+	
 	input USBOUT[4]
 	output USBIN[4]
 	output DAC[4]
+	
 	input USBOUT[5]
 	output USBIN[5]
 	output DAC[5]
+	
 	input USBOUT[6]
 	output USBIN[6]
 	output DAC[6]
+	
 	input USBOUT[7]
 	output USBIN[7]
 	output DAC[7]
@@ -45,24 +51,29 @@ core x8	#pureAES
 	input AES[1]
 	output USBIN[1]
 	output DAC[1]
+	
 	input AES[2]
 	output USBIN[2]
 	output DAC[2]
+	
 	input AES[3]
 	output USBIN[3]
 	output DAC[3]
+	
 	input AES[4]
 	output USBIN[4]
 	output DAC[4]
+	
 	input AES[5]
 	output USBIN[5]
 	output DAC[5]
+	
 	input AES[6]
 	output USBIN[6]
 	output DAC[6]
+	
 	input AES[7]
 	output USBIN[7]
 	output DAC[7]
-
 
 end

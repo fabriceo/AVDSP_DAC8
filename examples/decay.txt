@@ -1,14 +1,15 @@
-sum		MEMORY 1
+# test example which generate a new sample yn = coef * xn + (1-coef) * yn-1
+yn		MEMORY 1
 coef	0.6
 
 core
 	input 16
-	output 24
-	gain coef
-	copyxy
-	loadxmem sum
-	gain 1-coef
-	addxy
-	savexmem sum
+	output 24	#loopback for reference
+	gain coef	# multiply new sample xn by 0.6
+	copyxy		#store it in Y
+	loadxmem yn	#get prev output
+	gain 1-coef		#multiply by 0.4
+	addxy		#add xn*0.6
+	savexmem yn	#save for next loop
 	output 25
 end

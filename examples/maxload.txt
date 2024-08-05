@@ -1,6 +1,6 @@
 ## maximum cpu load
 ## for 4 cores:
-## 192k : input + 9 biquad section  + delaydpus + output per core
+## 192k : input + 8 biquad section  + delaydpus + output per core
 ##  96k : input + 20 biquad section + delaydpus + output per core 
 ##  48k : Double (input + 22 biquad section + delaydpus + output) per core
 ##
@@ -14,7 +14,7 @@
 fc	10000
 filt192	LPLR8(fc) LPLR8(fc) LPLR2(fc)	#9 biquad section
 filt96	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc)  #20 biquad section
-filt48	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR4(fc) #22 biquad section
+filt48	LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) LPLR8(fc) #20 only LPLR4(fc) #22 biquad section
 fpaux	LPLR8(fc) LPLR8(fc) LPLR2(fc) #9 biquad
 mem		MEMORY 3
 
@@ -22,12 +22,17 @@ core4exist	x1000
 core5exist	x2000
 core6exist	x4000
 core7exist	x8000
-fs48k		b11100000
-fs96k		b11010000
-fs192k		b10110000
+
+fs48k		b111000000000
+fs96k		b110100000000
+fs192k		b101100000000
+
 pureusb		1
 usbaes		4
 pureaes		8
+pureaes2	x20
+pureaes3	x40
+pureaes4	x80
 anyinput	15
 
 ### 192K ###
@@ -203,18 +208,20 @@ core	pureusb,fs48k
 	output 31
 
 
+#extra cores (not for 192k)
+
 core anyinput,fs96k
 	input 16
 	biquad fpaux
 	savexmem mem[0]
 
 core	anyinput,fs96k
-	input 16
+	input 17
 	biquad fpaux
 	savexmem mem[1]
 
 core	anyinput,fs96k
-	input 16
+	input 18
 	biquad fpaux
 	savexmem mem[2]
 
@@ -222,10 +229,15 @@ core	anyinput,fs96k
 core	anyinput,fs48k
 	input 16
 	biquad fpaux
-	savexmem mem[1]
+	savexmem mem[0]
 
 core	anyinput,fs48k
 	input 16
+	biquad fpaux
+	savexmem mem[1]
+
+core	anyinput,fs48k
+	input 17
 	biquad fpaux
 	savexmem mem[2]
 

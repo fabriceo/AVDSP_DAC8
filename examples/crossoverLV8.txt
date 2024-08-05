@@ -1,3 +1,4 @@
+# this is a test program to create a Lipsitch Vanderkoy Substractive filter 
 fc		600
 bessel8	LPBE8(fc)
 gd	=	986000/fc	#group delay for bessel8 at fc

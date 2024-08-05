@@ -1,0 +1,154 @@
+
+## Example for GARSAC Diffusion, 3 ways + Sub
+## replacing a DSP408
+
+## used to differentiate dsp program inputs channels according to input selection
+PureUSB		x03
+PureAES		x08
+
+## key transition frequencies for crossover
+
+f_hp_sub	25		#high pass frequency for sub
+f_lp_sub	111		#low  pas  frequency for sub
+
+f_hp_low	111		#high pass frequency for low
+f_lp_low	691		#low  pas  frequency for low
+
+f_hp_mid	691		#high pass frequency for mid
+f_lp_mid	6500	#low  pas  frequency for mid
+
+f_hp_high	691		#high pass frequency for high
+#no stop frequencies for high
+
+## DAC output assignement
+
+sub_left 	0
+sub_right	1
+low_left	2
+low_right	3
+mid_left	4
+mid_right	5
+high_left	6
+high_right	7
+
+## AES or USB inputs assignement
+
+inA			16
+inB			17
+inC			18	#not used
+inD			19  #not used
+
+## these filters are applied on the incoming signal, before crossover. 4 biquads each.
+## it is recommended to apply the same treatment to keep phase consistent between left and right
+
+filt_left	HS2(300, 0.6, -11.5db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
+filt_right	HS2(300, 0.6, -11.5db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
+
+## each of these filter below takes 8 biquads in total. PEQ with 0db is same as a passtrough or bypass
+## the filter starts with the HighPass filter , then some PEQ, then Lowpass
+## same filter for left and right to ensure phase consistency, but possibility to change that of course
+
+filt_sub	HPBU4(f_hp_sub) PEAK(122, 3, -5db)   PEAK(100, 0.7, 0db)  PEAK(150,  0.7, 0db) PEAK(180,  0.7, 0db) LPLR4(f_lp_sub)
+filt_low	HPLR4(f_hp_low) PEAK(250, 2.2, -9db) PEAK(400, 0.7, 0db)  PEAK(500,  0.7, 0db) PEAK(600,  0.7, 0db) LPLR4(f_lp_low)
+filt_mid	HPBU4(f_hp_mid) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) LPLR4(f_lp_mid)
+filt_high	HPLR4(f_hp_high) HS2(4000, 0.7, +3db) PEAK(1000, 0.71, 0db) PEAK(1000, 0.71, 0db) PEAK(1000, 0.71, 0db) #only 6 biquads here
+
+## delay between drivers described in millimetter . 
+## consider applying a difference instead of absolute distance, 
+## to minimize resulting value in microsec
+
+## value below in millimetter, relative to the FAREST one so that it is POSITIVE only.
+soundspeed	0.343	#assuming 343m/s
+## sub is ref point 0
+sub_delay_left		= 0   / soundspeed
+sub_delay_right		= 0   / soundspeed
+low_delay_left		= 2190 / soundspeed
+low_delay_right		= 2190 / soundspeed
+mid_delay_left		= 2000 / soundspeed
+mid_delay_right		= 2000 / soundspeed
+high_delay_left		= 2118 / soundspeed
+high_delay_right	= 2118 / soundspeed
+
+## special temporary location to store prefiltered signals
+
+left	MEMORY		#memory location for left signal with filt_left
+right	MEMORY		#same for right
+sub		MEMORY		#sum of left and right after filtering and gain. like in DSP408 ??
+
+core	#this core is in charge of stereo input treatment and creating mono channel for sub
+
+	section PureUSB
+	transfer (inA,24) (inB,25)	#usb to usb (loopback)
+	section PureAES
+	transfer (8,24) (9,25)		#aes to usb to provide visibility on sound presence (mandatory)
+	section
+	
+	input 		inA
+	biquad 		filt_left
+	savexmem 	left
+	output		26	#send to usb host channel 3 for test with REW
+	copyxy
+	
+	input 		inB
+	biquad 		filt_right
+	savexmem 	right
+	
+	avgxy
+	savexmem 	sub
+	output		27	#send to usb host channel 4 for test with REW
+
+core	#SUB treatment
+
+	loadxmem 	sub
+	biquad 		filt_sub	#same filter and response for both
+	copyxy
+	delayus		sub_delay_left
+
+	output		28	#send to usb host channel 5 for test with REW
+	output		sub_left
+
+	copyyx
+	delayus 	sub_delay_right	
+	output		sub_right
+
+core	#LOW treatment
+
+	loadxmem	left
+	biquad		filt_low
+	delayus		low_delay_left
+	output		low_left
+	output		29	#send to usb host channel 6 for test with REW
+	
+	loadxmem	right
+	biquad		filt_low
+	delayus		low_delay_right
+	output		low_right
+		
+core	#MID treatment
+
+	loadxmem	left
+	biquad		filt_mid
+	delayus		mid_delay_left
+	output		mid_left
+	output		30	#send to usb host channel 7 for test with REW
+	
+	loadxmem 	right
+	biquad		filt_mid
+	delayus		mid_delay_right
+	output		mid_right	
+		
+core	#HIGH treatment
+
+	loadxmem	left
+	input		inA
+	biquad		filt_high
+	delayus		high_delay_left
+	output		high_left
+	output		31	#send to usb host channel 8 for test with REW
+	
+	loadxmem	right
+	biquad 		filt_high
+	delayus		high_delay_right
+	output		high_right
+		
+end

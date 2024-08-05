@@ -1,17 +1,17 @@
-
+# lx mini example without optimization, compatible 96khz
 in		PEAK(1800,7,2db)
 loeq	LP2(700,0.5) PEAK(50,0.5,7db) PEAK(5100,8,-16db) PEAK(5800,3,-10db)
 hieq	HP2(700,0.5) LS2(1000,0.5,16db) PEAK(2600,2,-4db) HS2(8000,0.7,8.5db) PEAK(10000,5,2.3db) PEAK(13100,7,-5db) PEAK(15800,10,7db)
 
 core
-	transfer (16,24)
-	inputgain (16,-7db)
+	transfer (16,24)	#loopback for reference
+	inputgain (16,-7db)	#reduction by -7db to compensate peak at 50hz
 	biquad in
 	biquad loeq
 	output 25
 
 core
-	inputgain (16,-17db)
+	inputgain (17,-17db)
 	biquad in
 	biquad hieq
 	output 26

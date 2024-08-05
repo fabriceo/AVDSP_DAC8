@@ -5,18 +5,26 @@ DAC		0
 AES		8
 USBOUT	16
 USBIN	24
+fromUSB	16
+toUSB	24
 
 core4exist	x1000
 core5exist	x2000
 core6exist	x4000
 core7exist	x8000
-fs48k		b11100000
-fs96k		b11010000
-fs192k		b10110000
+
+fs48k		b11100000000
+fs96k		b11010000000
+fs192k		b10110000000
+
 pureusb		1
 usbaes		4
 pureaes		8
-anyinput	15
+pureaes2	x20
+pureaes3	x40
+pureaes4	x80
+anysource	15
+
 ### to DAC outputs
 
 dac		0

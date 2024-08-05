@@ -10,15 +10,15 @@ ft		HPBU2(500) LT(500,0.707,250,0.577)
 
 core
 	input 16
-	output 24
-	biquad fhpbu
+	output 24		#loopback for reference
+	biquad fhpbu	#apply butterworth 2nd order
 	output 25
-	biquad flt
+	biquad flt		#apply linkwitz transform
 	output 26
 	input 16
-	biquad fhpbe
+	biquad fhpbe	#apply bessel 2nd order 
 	output 27
 	input 16
-	biquad ft
+	biquad ft		#apply But + LT = same as bessel 2
 	output 28
 end

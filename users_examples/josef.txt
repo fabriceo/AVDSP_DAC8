@@ -1,0 +1,47 @@
+#specific program for josef dac8pro using EQ APO in PureUSB
+
+#declaring streams coming from Host:
+inLowLeft 16
+inLowRight 17
+inMidLeft 18
+inMidRight 19
+inHighLeft 20
+inHighRight 21
+
+#declare DAC outputs according to your loudspeakers
+dacLowLeft 0
+dacLowRight 1
+dacMidLeft 2
+dacMidRight 3
+dacHighLeft 4
+dacHighRight 5
+
+filt1 PEAK(883, 3.31, -5.4dB)
+
+core
+input inLowLeft
+output 24 #this provide a passtrough feedback on channel 1 for tests with REW
+biquad filt1
+output dacLowLeft
+input inLowRight
+biquad filt1
+output dacLowRight
+output 25 #this provides the resulting signal on USB channel 2 for tests with REW
+
+core
+input inMidLeft
+biquad filt1
+output dacMidLeft
+input inMidRight
+biquad filt1
+output dacMidRight
+
+core
+input inHighLeft
+biquad filt1
+output dacHighLeft
+input inHighRight
+biquad filt1
+output dacHighRight
+
+end
