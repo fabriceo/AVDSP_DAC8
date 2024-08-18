@@ -1,0 +1,120 @@
+# basic crossover 2 ways, demo posted on ASR forum august 18th, 2024.
+
+fc 			= 300 								#defines a constant for a cutoff frequency, here 300hz
+delayhigh 	= 10 / 343 * 10000					#defines a constant of 291 micro second as our treble driver is ahead of the woofer by 10cm here
+
+lopass		LPLR4( fc ) #PEAK( 80, 0.7, -2db)
+hipass		HPLR4( fc ) #PEAK( 800, 2, -3db) HS2( 10000, 1, +4db)
+
+usbleft = 16; usbright = 17; rew1 = 24; rew2 = 25; rew3 = 26
+
+leftheadset = 0; rightheadset = 1; leftlow = 2; lefthigh = 4; rightlow = 3; righthigh = 5
+
+core 	#1 in charge of left channels only
+	input usbleft
+	output leftheadset, rew1
+	biquad lopass
+	outputvolsat leftlow, rew2
+	input usbleft
+	biquad hipass
+	delayus delayhigh
+	outputvolsat lefthigh, rew3
+
+core 	#2 in charge of right channels only
+	input usbright
+	output rightheadset
+	biquad lopass
+	output rightlow
+	input usbright
+	biquad hipass
+	delayus delayhigh
+	output righthigh
+end
+
+#result of the command line:
+
+fabrice@MacBook-Pro-de-Fabrice examples % dspcreate -dspformat 2 -dsptext basic2waycrossover.txt
+
+DSP ENCODER : format generated for handling integer 64 bits, with 28 bits mantissa
+reading file basic2waycrossover.txt
+
+label fc type 3 created with value 300.000000
+label delayhigh type 1 created with value 291.545190
+   0 : [#1 +12] 0 0 0 0 110 40001C 4 9 0 0 0 
+DSP_PARAM
+  12 : [#2 +0] 
+
+  13 : biquad section
+filter lopass type LPLR4 created with F=300.000000, Q=1.000000, G=1.000000
+FILTER f = 300.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.000443,  b1 = 0.000887, b2 = 0.000443, a1 = 1.939570,  a2 = -0.941343
+FILTER f = 300.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.000443,  b1 = 0.000887, b2 = 0.000443, a1 = 1.939570,  a2 = -0.941343
+-> 2 biquad cell(s) provided
+
+  91 : biquad section
+filter hipass type HPLR4 created with F=300.000000, Q=1.000000, G=1.000000
+FILTER f = 300.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.970228,  b1 = -1.940457, b2 = 0.970228, a1 = 1.939570,  a2 = -0.941343
+FILTER f = 300.000000, Q = 0.707107, G = 1.000000
+ b0 = 0.970228,  b1 = -1.940457, b2 = 0.970228, a1 = 1.939570,  a2 = -0.941343
+label usbleft type 3 created with value 16.000000
+label usbright type 3 created with value 17.000000
+label rew1 type 3 created with value 24.000000
+label rew2 type 3 created with value 25.000000
+label rew3 type 3 created with value 26.000000
+label leftheadset type 3 created with value 0.000000
+label rightheadset type 3 created with value 1.000000
+label leftlow type 3 created with value 2.000000
+label lefthigh type 3 created with value 4.000000
+label rightlow type 3 created with value 3.000000
+label righthigh type 3 created with value 5.000000
+-> 2 biquad cell(s) provided
+DSP_CORE
+ 169 : [#5 +7] 0 0 0 0 FFFFFFFF(@168) 0 
+DSP_LOAD
+ 176 : [#7 +2] 10 
+DSP_STORE
+ 178 : [#8 +2] 1800 
+DSP_BIQUADS
+ 180 : [#50 +3] 20 FFFFFF59(@13) 
+DSP_STORE_VOL_SAT
+ 183 : [#45 +2] 1902 
+DSP_LOAD
+ 185 : [#7 +2] 10 
+DSP_BIQUADS
+ 187 : [#50 +3] 2C FFFFFFA0(@91) 
+DSP_DELAY
+DELAY 291 -> MAXSAMPLE = 55
+ 190 : [#48 +4] 123 38 0 
+DSP_STORE_VOL_SAT
+ 194 : [#45 +2] 1A04 
+DSP_CORE
+ 196 : [#5 +7] 0 0 0 0 FFFFFFFF(@195) 0 
+DSP_LOAD
+ 203 : [#7 +2] 11 
+DSP_STORE
+ 205 : [#8 +2] 1 
+DSP_BIQUADS
+ 207 : [#50 +3] 70 FFFFFF3E(@13) 
+DSP_STORE
+ 210 : [#8 +2] 3 
+DSP_LOAD
+ 212 : [#7 +2] 11 
+DSP_BIQUADS
+ 214 : [#50 +3] 7C FFFFFF85(@91) 
+DSP_DELAY
+DELAY 291 -> MAXSAMPLE = 55
+ 217 : [#48 +4] 123 88 0 
+DSP_STORE
+
+ 221 : [#8 +2] 5 
+DSP_END_OF_CODE
+ 223 : [#0 +0] 
+dsptotallength = 224
+dataSize       = 192
+check sum      = 0x1CB00DF
+cores declared = 2
+max encoded    = 1.986164 = 2:30 vs 4:28
+DSP program file successfully generated with encoder v 110
+
