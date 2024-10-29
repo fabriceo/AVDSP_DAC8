@@ -118,3 +118,9 @@ cores declared = 2
 max encoded    = 1.986164 = 2:30 vs 4:28
 DSP program file successfully generated with encoder v 110
 
+decimation factor   = 1
+maximum DSP tasks   = 7
+DSP program number  = 1
+DSP Core 1: load    = 270
+DSP Core 2: load    = 237
+DSP max load        = 270 / 549 = 49%fs
