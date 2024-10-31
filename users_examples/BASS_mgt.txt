@@ -1,6 +1,10 @@
 
 ## Example for bass management 5.1
-
+## not optimized for 192khz. perfectly ok for 96khz
+## each output to dac statement can be replaced by outputvolsat to avoid any risk of saturation
+## the LFE channel is increaded by 10db, another possibility is to reduce each other channels by -10db of course
+## each channel is going trough an LR4 crossover and is considered as "small"
+## the low pass part of the signal is sent to the SUB channel.
 
 ## DAC output assignement
 
@@ -11,7 +15,7 @@ SUB		3
 LS		4
 RS		5
 
-## USB inputs 
+## USB inputs definition
 
 Lin			16
 Rin			17
@@ -19,15 +23,6 @@ Cin			18
 LFEin		19
 LSin		20
 RSin		21
-
-## special outputs to USB host for testing with REW 
-
-REW_LOOP	24	# correspond to input channel 1 in REW menus
-REW_HP		25
-REW_LP		26
-REW_SUM		27
-REW_AP		28
-REW_SUB		29
 
 ## key frequencies for individual crossover (large/small)
 
@@ -38,13 +33,13 @@ F_LFE		120		# LFE channel limit
 
 LP_CROSS	LPLR4( F_CROSS )
 HP_CROSS	HPLR4( F_CROSS )
-AP_CROSS	AP2( F_CROSS, 0.7) AP2( F_CROSS, 0.7)
+AP_CROSS	AP2( F_CROSS, 0.7)
 
 ## low pass for limiting LFE channel
 
 LP_LFE		LPLR4( F_LFE )
 
-## filters definition for each output including PEQ correction (0db by default)
+## filters definition for each output including some optional PEQ correction (set at 0db by default)
 
 F_L		HPLR4( F_CROSS ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
 F_R		HPLR4( F_CROSS ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
@@ -55,28 +50,34 @@ F_RS	HPLR4( F_CROSS ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db)
 F_SUB	PEAK(80, 0.7, 0db) PEAK(100, 0.7, 0db) PEAK(120, 0.7, 0db) PEAK(160, 0.7, 0db) 
 
 ## bank of delays given in microseconds to correct speaker distance at listening point
+## each value should be computed based on 343m/seconds and the value should be relative to the farest speaker.
+## example : if farest is at 4m from listening position (example mains L & R)) and if center is at 3.8m
+## then the center should be delayed by (4-3.8)/343*1000000 = 583us
 
-D_L		10
-D_R		10
-D_C		10
-D_SUB	10
-D_LS	10
-D_RS	10
+D_L		100
+D_R		100
+D_C		100
+D_SUB	100
+D_LS	100
+D_RS	100
 
+## special outputs to USB host for testing with REW only
 
-## progam
+REW_LOOP	24	# correspond to input channel 1 in REW menus
+REW_HP		25
+REW_LP		26
+REW_SUM		27
+REW_AP		28
+REW_SUB		29
+
+## progam. Flow could be spread on more cores if we want 192khz capability.
 
 core	#in charge of L R C
 
 	input 	Lin
-	output	REW_LOOP	# provide a direct feedback/loopback for reference
 	biquad 	F_L
 	delayus	D_L
 	output 	L
-
-	input 	Lin			#this is just to provide an all pass to REW for analysis
-	biquad	AP_CROSS
-	output	REW_AP
 	
 	input 	Rin
 	biquad 	F_R
@@ -89,16 +90,6 @@ core	#in charge of L R C
 	output 	C
 	
 core	#in charge of LS and RS for sharing workload across cores
-
-	input 	Lin			# this is to provide several feedback to REW during test
-	copyxy
-	biquad 	HP_CROSS
-	output	REW_HP		#provide visibility on the high pass
-	swapxy
-	biquad 	LP_CROSS
-	output	REW_LP		# provide visibility on low pass
-	addxy
-	output	REW_SUM		#provide visibility on the sum of the LP+HP
 
 	input 	LSin
 	biquad 	F_LS
@@ -137,10 +128,34 @@ core	#in charge of LFE output
 	biquad 	LP_LFE		# apply specific lowpass on LFE
 	swapxy				# exhange X and Y
 	
-	addxy				# add the LFE channel
+	addxy				# add the LFE channel which is now in Y
 	biquad 	F_SUB		# apply corrections for final SUB output
-	output	REW_SUB		#provide visibility on the SUB output
+	output	REW_SUB		# provide visibility on the SUB output for test purpose
 	delayus	D_SUB
 	output 	SUB
 
+core	# only used for test with REW, can be deleted for production
+
+	input 	Lin			# this is to provide several feedback to REW during test
+	output	REW_LOOP	# provide a direct feedback/loopback for reference
+	copyxy				# save value in Y accumulator
+	biquad 	HP_CROSS
+	output	REW_HP		# provide visibility on the high pass for tests
+	swapxy				# get back initial value
+	biquad 	LP_CROSS
+	output	REW_LP		# provide visibility on low pass for tests
+	addxy
+	output	REW_SUM		# provide visibility on the sum of the LP+HP for tests
+	input 	Lin			# this is to provide several feedback to REW during test
+	biquad	AP_CROSS
+	output	REW_AP
+
 end
+
+## core load for above program
+
+DSP Core 1: load    = 476
+DSP Core 2: load    = 326
+DSP Core 3: load    = 670
+DSP Core 4: load    = 308
+
