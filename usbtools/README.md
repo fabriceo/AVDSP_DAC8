@@ -16,13 +16,14 @@ When a Thesycon audio driver for DAC8PRO or DAC8STEREO is installed, it will som
 To be able to use the usbtool, it is then required to uninstall the Thesycon driver which will be then automatically replaced by the windows drivers.
 The Thesycon driver can be reinstalled later when developement and tests are finished.
 
-for other platform, the usbtools is using libusb. the library is provided for osx, but for linux this must be installed upfront by the user with the linux package manager.
+for other platform, the usbtools is using libusb. the library is staticaly included in the OSX version, but for linux this must be installed upfront by the user with the linux package manager.
 
+Source code for xmosusb can be found in https://github.com/fabriceo/XMOS/tree/master/xmosusb
 
 ## REMARK:
 for windows, uninstalling and reinstalling the Thesycon audio driver during dsp program devlopement is a borring exercise. 
 The dsp firmware includes a specific process to reboot as an usb device with another VID-PID wich gives the possibility to interact with usbtool in a seamless way.
 see other document for more information.
  
-May 5,2024
+November 12th,2024
 

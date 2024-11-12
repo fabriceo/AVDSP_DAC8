@@ -1,0 +1,63 @@
+# example of a 2 channel EQ typically for DAC8STEREO
+# the program works with stream coming from USB host or SPDIF inputs (tested with core x3 or core xC)
+
+DAC		0
+SPDIF	8
+USBOUT	16
+USBIN	24
+
+left	MEMORY	1
+right	MEMORY	1
+lefteq	MEMORY	1
+righteq	MEMORY	1
+
+# example of filter definition to be applied on both channels. gain ofHPU2 is used to reduce overall signal to avoid clip
+EQcommon	HPBU2(200, -3db) PEAK(200, 0.7, 0db) PEAK (500, 0.7, 0db) PEAK (1000, 0.7, -3db) PEAK (1000, 0.7, 0db) PEAK (1000, 0.7, 0db)
+
+#example of filters to be applied on each channel separately (not recmended as this create some phase difference across left and rigth
+EQleft		PEAK(4000, 0.7, 3db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
+EQright		PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
+
+core x3	#this core is launched only when using USB1 or USB2
+
+	input USBOUT[0]		#get left signal from usb host
+	savexmem left		#store it in memory location
+	output USBIN[0]		#provide a reference loopback for testing with REW software
+	
+	input USBOUT[1]		#get right signal from usb host
+	savexmem right
+
+core xC #used only when in spdif inputs
+
+	input SPDIF[0]		#get left signal from spdif inputs
+	savexmem left		#store it in memory location
+	output USBIN[0]		#provide a reference loopback for testing with REW software (channel 1)
+	
+	input SPDIF[1]
+	savexmem right
+	
+core	#used to perform EQcommon on the left signal
+
+	loadxmem left		#get value stored by above core
+	biquad EQcommon		#filter it
+	savexmem lefteq		#store in new emory location, for spreading load across core
+
+core 	#used to perform EQcommon on the rigth signal
+
+	loadxmem right
+	biquad EQcommon
+	savexmem righteq
+	
+core	#used to finalize left eq
+
+	loadxmem lefteq
+	biquad EQleft
+	output	DAC[0]
+
+core	#used to finalize right eq
+
+	loadxmem righteq
+	biquad EQright
+	output	DAC[1], USBIN[1]	#also provide copy of the result to the Host usb for test with REW (channel 2) 
+
+end
