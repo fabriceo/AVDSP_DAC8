@@ -24,6 +24,11 @@ For the time being we send the firmware to any DAC8 product owner just requiring
 This is the chosen way to provide advise and support and to manage user expectation. Also this provides valuable return of experience that will be used to enhance the solution.
 Please provide your serial number and DAC model and a short summary of your project. You will receive the binary firmware file free of charge and configured for your serial number.
 
+## any source code ?
+the source code of the DAC8PRO or DAC8STEREO product is not open source.
+but the DSP runtime (opcode interpreter) is available here in the "develop" branch https://github.com/fabriceo/AVDSP/tree/develop/module_avdsp/runtime
+the assembly version of the interpreter for XS2 platform is not yet opensource, same for the loader and for the interface with the standard XMOS USB audio application.
+licensing can be discussed with the author easily
 
-May 5,2024
+November 12th,2024
 
