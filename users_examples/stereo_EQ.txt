@@ -11,36 +11,45 @@ right	MEMORY	1
 lefteq	MEMORY	1
 righteq	MEMORY	1
 
-# example of filter definition to be applied on both channels. gain ofHPU2 is used to reduce overall signal to avoid clip
-EQcommon	HPBU2(200, -3db) PEAK(200, 0.7, 0db) PEAK (500, 0.7, 0db) PEAK (1000, 0.7, -3db) PEAK (1000, 0.7, 0db) PEAK (1000, 0.7, 0db)
+# example of filter definition to be applied on both channels. starting with but2 to remove any potential DC
+# gain ofHPBU2 is used to reduce overall signal to avoid clip
+EQcommon	HPBU2(20, -3db) PEAK(200, 1, 0db) PEAK (500, 1, 3db) PEAK (1000, 1, 0db) PEAK (2000, 1, 0db) PEAK (4000, 1, 0db)
 
-#example of filters to be applied on each channel separately (not recmended as this create some phase difference across left and rigth
-EQleft		PEAK(4000, 0.7, 3db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
-EQright		PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db) PEAK(1000, 0.7, 0db)
+# example of filters to be applied on each channel separately 
+# not recomended as this create some phase difference between left and rigth
+EQleft		PEAK(250, 1, 0db) PEAK(500, 1, 0db) PEAK(1000, 1, 0db) PEAK(2000, 1, 3db) PEAK(4000, 1, 0db) PEAK(8000, 1, 0db)
+EQright		PEAK(250, 1, 0db) PEAK(500, 1, 0db) PEAK(1000, 1, 0db) PEAK(2000, 1, 0db) PEAK(4000, 1, 3db) PEAK(8000, 1, 0db)
 
-core x3	#this core is launched only when using USB1 or USB2
+core #this core is dedicated to read signal on the right source and route them to host
 
+	section x3	#this section is enabled only when using USB1 or USB2
 	input USBOUT[0]		#get left signal from usb host
 	savexmem left		#store it in memory location
+	delayone			#dely this reference signal by 2 sample, to align with last cores
+	delayone
 	output USBIN[0]		#provide a reference loopback for testing with REW software
 	
 	input USBOUT[1]		#get right signal from usb host
 	savexmem right
 
-core xC #used only when in spdif inputs
+	section xC #used only when in spdif inputs
 
 	input SPDIF[0]		#get left signal from spdif inputs
 	savexmem left		#store it in memory location
-	output USBIN[0]		#provide a reference loopback for testing with REW software (channel 1)
+	delayone			#dely this reference signal by 2 sample, to align with last cores
+	delayone
+	output USBIN[0]		#provide a loopback to properly detect sound presence
 	
 	input SPDIF[1]
 	savexmem right
+	
+	section		#end of the sections declared above
 	
 core	#used to perform EQcommon on the left signal
 
 	loadxmem left		#get value stored by above core
 	biquad EQcommon		#filter it
-	savexmem lefteq		#store in new emory location, for spreading load across core
+	savexmem lefteq		#store in new memory location, for spreading load across core
 
 core 	#used to perform EQcommon on the rigth signal
 
