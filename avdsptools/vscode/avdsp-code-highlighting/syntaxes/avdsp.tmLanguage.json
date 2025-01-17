@@ -1,0 +1,83 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"scopeName": "source.avdsp",
+	"name": "avdsp",
+	"patterns": [
+		{"include": "#keywords"},
+		{"include": "#strings"},
+		{"include": "#avdspfilt"},
+		{"include": "#comments"},
+		{	"name" : "meta.preprocessor.c.include",
+			"begin" : "^\\s*=\\s*(include)\\b",
+			"end" : "(?=(?://|/\\*))|$",
+			"captures" : { "1" : { "name" : "keyword.control.import.include.avdsp" } },
+			"patterns" : [
+				{	"name" : "punctuation.separator.continuation.avdsp",
+					"match" : "(?>\\\\s*\n)"
+				},
+				{	"name" : "string.quoted.double.include.avdsp",
+					"begin" : "\"",
+					"end" : "\"",
+					"beginCaptures" : { "0" : { "name" : "punctuation.definition.string.begin.avdsp" } },
+					"endCaptures" : { "0" : { "name" : "punctuation.definition.string.end.avdsp" } }
+				},
+				{	"name" : "string.quoted.other.lt-gt.include.avdsp",
+					"begin" : "<",
+					"end" : ">",
+					"beginCaptures" : { "0" : { "name" : "punctuation.definition.string.begin.avdsp" } },
+					"endCaptures" : { "0" : { "name" : "punctuation.definition.string.end.avdsp" } }
+				}
+			]},
+		{	"name": "storage.type.avdsp",
+			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8)\\b"
+		}
+		],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.avdsp",
+				"match": "\\b(nop|input|output|transfer|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatevol|saturategain|delayone|delayus|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquad8|convol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate)\\b"
+				
+			},{
+				"name": "keyword.function.avdsp",
+				"match": "\\b(tile|param|core|section|end|send|receive)\\b"
+			}]
+		},
+		"avdspfilt": {
+			"patterns": [{
+				"name": "keyword.other.avdsp",
+				"match": "\\b(LPBE2|LPBE3|LPBE4|LPBE6|LPBE8|HPBE2|HPBE3|HPBE4|HPBE6|HPBE8|LPBE3db2|LPBE3db3|LPBE3db4|LPBE3db6|LPBE3db8|HPBE3db2|HPBE3db3|HPBE3db4|HPBE3db6|HPBE3db8|LPBU2|LPBU3|LPBU4|LPBU6|LPBU8|HPBU2|HPBU3|HPBU4|HPBU6|HPBU8|LPLR2|LPLR3|LPLR4|LPLR6|LPLR8|HPLR2|HPLR3|HPLR4|HPLR6|HPLR8|LP1|HP1|LS1|HS1|AP1|BP0DB|LP2|HP2|LS2|HS2|AP2|PEAK|NOTCH|BPQ|HILB|LT)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.avdsp",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.avdsp",
+					"match": "\\\\."
+				}
+			]
+		},"comments" : {
+			"patterns" : [
+				{	"begin" : "(^[ \t]+)?(?=#)",
+					"end" : "(?!\\G)",
+					"beginCaptures" : { "1" : { "name" : "punctuation.whitespace.comment.leading.avdsp" } },
+					"patterns" : [
+						{	"name" : "comment.line.double-slash.avdsp",
+							"begin" : "#",
+							"end" : "\\n",
+							"beginCaptures" : { "0" : { "name" : "punctuation.definition.comment.avdsp" } },
+							"patterns" : [
+								{	"name" : "punctuation.separator.continuation.avdsp",
+									"match" : "(?>\\\\s*\\n)"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	}
+}

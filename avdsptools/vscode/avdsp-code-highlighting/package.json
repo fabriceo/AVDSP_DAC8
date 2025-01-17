@@ -1,0 +1,50 @@
+{
+	"name": "avdsp-code-highlighting",
+	"displayName": "avdsp code highlighting",
+	"description": "Syntax highlighting for .avdsp files",
+	"publisher": "avdspproject",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"engines": {
+		"vscode": "^1.65.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "avdsp",
+				"aliases": [
+					"avdsp",
+					"avd"
+				],
+				"extensions": [
+					".avdsp",
+					".avd"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "avdsp",
+				"scopeName": "source.avdsp",
+				"path": "./syntaxes/avdsp.tmLanguage.json"
+			}
+		]
+	},
+	"__metadata": {
+		"id": "avdspprojectid",
+		"publisherId": "avdspprojectpubid",
+		"publisherDisplayName": "AVDSP Project",
+		"targetPlatform": "undefined",
+		"updated": false,
+		"isPreReleaseVersion": false,
+		"installedTimestamp": 1737014578773,
+		"preRelease": false
+	}
+}

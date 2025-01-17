@@ -1,0 +1,71 @@
+#########
+#########  3 test at 96k
+#########  first test for realistic treatment of 8 chanels spread over 4 cores : 24 biquads
+#########  second test : maximum cpu utilisation with 4 cores ( 216 biquads)
+#########  third test :  maximum cpu utilisation, maximizing mips (+53) by spreading over 7 cores (245 biquads)
+#########
+
+######### 4 active cores at 96k with DAC8PRODSP7 #########
+
+filt24	LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR8(1000) LPLR8(1000)  #24 biquads
+
+core
+	input 16 ; biquad filt24 ; delayus 100 ; output 24
+	input 17 ; biquad filt24 ; delayus 100 ; output 25
+core
+	input 16 ; biquad filt24 ; delayus 100 ; output 24
+	input 17 ; biquad filt24 ; delayus 100 ; output 25
+core
+	input 16 ; biquad filt24 ; delayus 100 ; output 24
+	input 17 ; biquad filt24 ; delayus 100 ; output 25
+core
+	input 16 ; biquad filt24 ; delayus 100 ; output 24
+	input 17 ; biquad filt24 ; delayus 100 ; output 25
+end	
+
+######### 4 active cores at 96k with DAC8PRODSP7 #########
+
+lp54	LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR8(1000) LPLR4(1000) #equivalent to 54 sections
+	
+#  400 mips = 1080 x 4 = 4320 instructions before decimation
+#  54*4 = 216 biquads = 1.85mips per biquad
+#  first core consume 14 instruction more than 3 others
+
+core
+	biquad lp54
+core
+	biquad lp54
+core
+	biquad lp54
+core
+	biquad lp54
+end
+
+######### 7 active cores at 96k with DAC8PRODSP7 #########
+
+lp35	LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR8(1000) LPLR8(1000) LPLR8(1000) LPLR8(1000) \
+		LPLR6(1000) #equivalent to 35 sections 
+	
+#  35*7 = 245 biquads -> 453 mips spread over 7 cores : gain 53mips by spreading load.
+#  first core consume 14 instruction more than 3 others
+
+core
+	biquad lp35
+core
+	biquad lp35
+core
+	biquad lp35
+core
+	biquad lp35
+core
+	biquad lp35
+core
+	biquad lp35
+core
+	biquad lp35
+end
