@@ -14,14 +14,14 @@ core
 	input 16 ; biquad filt24 ; delayus 100 ; output 24
 	input 17 ; biquad filt24 ; delayus 100 ; output 25
 core
-	input 16 ; biquad filt24 ; delayus 100 ; output 24
-	input 17 ; biquad filt24 ; delayus 100 ; output 25
+	input 16 ; biquad filt24 ; delayus 100 ; output 26
+	input 17 ; biquad filt24 ; delayus 100 ; output 27
 core
-	input 16 ; biquad filt24 ; delayus 100 ; output 24
-	input 17 ; biquad filt24 ; delayus 100 ; output 25
+	input 16 ; biquad filt24 ; delayus 100 ; output 28
+	input 17 ; biquad filt24 ; delayus 100 ; output 29
 core
-	input 16 ; biquad filt24 ; delayus 100 ; output 24
-	input 17 ; biquad filt24 ; delayus 100 ; output 25
+	input 16 ; biquad filt24 ; delayus 100 ; output 30
+	input 17 ; biquad filt24 ; delayus 100 ; output 31
 end	
 
 ######### 4 active cores at 96k with DAC8PRODSP7 #########

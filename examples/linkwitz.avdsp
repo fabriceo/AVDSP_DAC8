@@ -1,24 +1,28 @@
+# comparing effect of linkwitz transform
 
+fhpbu	HPBU2(500)	#butterwoth 2nd order
 
-fhpbu	HPBU2(500)
+flt		LT(500, 0.707, 250, 0.577)
 
-flt		LT(500,0.707,250,0.577)
+fhpbe	HPBE2(250)	#bessel second order
 
-fhpbe	HPBE2(250)
-
-ft		HPBU2(500) LT(500,0.707,250,0.577) 
+ft		HPBU2(500) LT(500, 0.707, 250, 0.577) 
 
 core
 	input 16
-	output 24		#loopback for reference
+	output 24		#loopback for reference in REW
 	biquad fhpbu	#apply butterworth 2nd order
+
 	output 25
 	biquad flt		#apply linkwitz transform
 	output 26
+
 	input 16
-	biquad fhpbe	#apply bessel 2nd order 
+	biquad fhpbe	#apply bessel 2nd order to view it as a reference
 	output 27
+
 	input 16
-	biquad ft		#apply But + LT = same as bessel 2
+	biquad ft		#apply But + LT => same as bessel 2 !
 	output 28
+
 end

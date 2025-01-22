@@ -1,17 +1,21 @@
+# example to test the saturation process with REW
+
+
+
 highpass	HPBU2(400)
 
 core
 	input 16
 	output 24		#loopback for reference
-	biquad highpass	#the result in the DSP accumulator exceed +1..-1
+	biquad highpass	#the result in the DSP accumulator potentially exceed +1..-1
 	copyxy			#save result in accumulator Y
-	output 25		# signal is clamped sharp between +1 and -1
+	output 25		# signal is clipped sharp between +1 and -1
 	copyyx 			#retrieve accumulator Y
 	gain 8db		#accumulator is reduced between +0.8..-0.8
-	saturate		# the result is reduced by 6db steps automatically depending on gain
+	saturate		# the result is reduced by 1db steps automatically depending on gain
 	output 26		#clean as biquad routine provides 18db headroom
 	copyyx 			#retrieve accumulator Y
-	saturate		# the result is reduced by 6db automatically
+	saturate		# the result is reduced by 1db steps automatically
 	output 27
 end
 

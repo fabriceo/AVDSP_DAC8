@@ -1,23 +1,25 @@
 ### IO definitions for DAC8PRO
 ### each channels between 0..7
 
-DAC		0
+DAC		0                   #base address in memory
 AES		8
 USBOUT	16
 USBIN	24
+USBout	16
+USBin	24
 fromUSB	16
 toUSB	24
 
-core4exist	x1000
+core4exist	x1000           #pattern to detect existence of core4
 core5exist	x2000
 core6exist	x4000
 core7exist	x8000
 
-fs48k		b11100000000
+fs48k		b11100000000    #pattern to detect when DAC8 is in 48k
 fs96k		b11010000000
 fs192k		b10110000000
 
-pureusb		1
+pureusb		1               #pattern to detect when DAC8 is in PureUSB mode
 usbaes		4
 pureaes		8
 pureaes2	x20
@@ -27,8 +29,8 @@ anysource	15
 
 ### to DAC outputs
 
-dac		0
-dac0	= dac[0]
+dac		= DAC        
+dac0	= dac[0]            #proposed naming for memory attached to DAC outputs
 dac1	= dac[1]
 dac2	= dac[2]
 dac3	= dac[3]
@@ -39,8 +41,8 @@ dac7	= dac[7]
 
 ### from AES channels
 
-aes		8
-aes0	= aes[0]
+aes		= AES
+aes0	= aes[0]            #proposed naming for memory attached to AES inputs
 aes1	= aes[1]
 aes2	= aes[2]
 aes3	= aes[3]
@@ -51,7 +53,7 @@ aes7	= aes[7]
 
 ### form USB host
 
-usbout	16
+usbout	= USBOUT
 usbout0	= usbout[0]
 usbout1	= usbout[1]
 usbout2	= usbout[2]
@@ -61,9 +63,18 @@ usbout5	= usbout[5]
 usbout6	= usbout[6]
 usbout7	= usbout[7]
 
+USBout0	= usbout0
+USBout1	= usbout1
+USBout2	= usbout2
+USBout3	= usbout3
+USBout4	= usbout4
+USBout5	= usbout5
+USBout6	= usbout6
+USBout7	= usbout7
+
 ### to USB host
 
-usbin	24
+usbin	= USBIN
 usbin0	= usbin[0]
 usbin1	= usbin[1]
 usbin2	= usbin[2]
@@ -72,6 +83,15 @@ usbin4	= usbin[4]
 usbin5	= usbin[5]
 usbin6	= usbin[6]
 usbin7	= usbin[7]
+
+USBin0  = usbin0
+USBin1  = usbin1
+USBin2  = usbin2
+USBin3  = usbin3
+USBin4  = usbin4
+USBin5  = usbin5
+USBin6  = usbin6
+USBin7  = usbin7
 
 ### various constants
 

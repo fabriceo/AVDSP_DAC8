@@ -7,7 +7,7 @@ USBIN1	24
 USBIN2	25
 
 core
-	transfer ( USBOUT1, USBIN1 )	#loopback for reference
+	transfer ( USBOUT1, USBIN1 )	#loopback for reference in REW
 	mixergain ( USBOUT1 , 0.5 ) ( USBOUT2 , 0.5 )	#compute average left+right
 	output DAC1
 	output DAC2

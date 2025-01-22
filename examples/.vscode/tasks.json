@@ -1,0 +1,57 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "echo $PATH",
+            "type": "shell",
+            "command": "echo $PATH",
+        },
+        {
+            "label": "echo $DYLD_LIBRARY_PATH",
+            "type": "shell",
+            "command": "echo $DYLD_LIBRARY_PATH",
+        },
+        {
+            "label": "dspcreate",
+            "type": "shell",
+            "command": "dspcreate  -dspformat 2 -dsptext ${file}",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "dspcreate binfile",
+            "type": "shell",
+            "command": "dspcreate -dspformat 2 -dsptext ${file} -binfile ${fileBasenameNoExtension}.bin",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "dspload",
+            "type": "shell",
+            "command": "xmosusb --dspload ${fileBasenameNoExtension}.bin",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "dacstatus",
+            "type": "shell",
+            "command": "xmosusb --dacstatus",
+        },
+        {
+            "label": "dacwrite 1",
+            "type": "shell",
+            "command": "xmosusb --dacwrite 1",
+        },
+        {
+            "label": "xmosusb",
+            "type": "shell",
+            "command": "xmosusb"
+        }
+    ]
+}

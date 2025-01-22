@@ -7,7 +7,7 @@
 ### 
 ### command line to generate binary file:
 ###
-###   dspcreate -dspformat 2 -dspbasic crossover4way.txt -binfile crossover4way.bin -DFCUT=450
+###   dspcreate -dspformat 2 -dspbasic crossover4way.avdsp -binfile crossover4way.bin FCUT=450
 ###
 ###
 
@@ -37,36 +37,36 @@ RightIn		= USBhost[1]	# right audio channel from USB host
 ### dsp program start here, after user variable declaration, with "core" instruction
 
 core
-transfer ( USBhost , USBdevice )		# loopback on first channel to provide a reference during tests
-transfer ( LeftIn , DAC[0] ) ( RightIn , DAC[1] )	# transfer usb stereo straight to headset outputs
+  transfer ( USBhost , USBdevice )		# loopback on first channel to provide a reference during tests
+  transfer ( LeftIn , DAC[0] ) ( RightIn , DAC[1] )	# transfer usb stereo straight to headset outputs
 
-input LeftIn			# load audio sample into dsp ALU
-biquad Lowpass			# apply lowpass filter and equalization
-output DAC[2]			# send to dac2
-output USBdevice[2]		# provide loopback for measurement during test
+  input  LeftIn			      # load audio sample into dsp ALU X
+    biquad Lowpass		    # apply lowpass filter and equalization defined above
+    output DAC[2]			    # send to dac2
+  output USBdevice[2]		  # provide loopback for measurement in REW during test 
 
-input LeftIn
-biquad Highpass
-delayus DELAY					# apply delay line on result
-outputgain ( DAC[3] , GAIN )	# apply final reduction gain
+  input  LeftIn
+    biquad Highpass
+    delayus DELAY					  # apply delay line on result
+  outputgain ( DAC[3] , GAIN )	# apply final reduction gain
 
-core					# the dsp workload is spread over 2 cores. Second core program starts here
+core					# the dsp workload is spread over multiple cores. Second core program starts here
 input RightIn
-biquad Lowpass			# same filter 
-output DAC[4]			# no need to loop back to usb host as the result would be same
+  biquad Lowpass			    # same filter definition than left channel
+output DAC[4]			        # no need to loop back to usb host as the result would be same
 
 input RightIn
-biquad Highpass
-delayus DELAY
+  biquad Highpass
+  delayus DELAY
 outputgain ( DAC[5] , GAIN )
-output USBdevice[3]		# provide loopback for measurement during test, from core 2 to verify its running :)
+output USBdevice[3]		# provide loopback for measurement during test
 
 end						# dsp program ends here. any text below is ignored
 
 ########################## output for information only
 
 
-./dspcreate -dspformat 28 -dsptext crossover4way.txt -binfile crossover4way.bin FCUT=450 DIST=100
+./dspcreate -dspformat 28 -dsptext crossover4way.avdsp -binfile crossover4way.bin FCUT=450 DIST=100 
 DSP ENCODER : format generated for handling integer 64 bits, with 28 bits mantissa
 reading file /Users/Fabrice/AVDSP_DAC8/examples/crossover4way.txt
    0 : [#1 +12] 0 0 0 0 102 40001C 4 9 0 0 0 

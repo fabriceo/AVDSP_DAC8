@@ -1,0 +1,62 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "dspcreate",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "dspcreate -dspformat 2 -dsptext ${fileDirname}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [ ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "dspcreate binfile",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "dspcreate -dspformat 2 -dsptext ${fileDirname} -binfile ${fileDirname}.bin"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "dspload",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "xmosusb --dspload ${fileDirname}.bin"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "dacstatus",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "xmosusb --dacstatus"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "xmosusb",
+            "type": "shell",
+            "command": "xmosusb"
+        },
+    ]
+}

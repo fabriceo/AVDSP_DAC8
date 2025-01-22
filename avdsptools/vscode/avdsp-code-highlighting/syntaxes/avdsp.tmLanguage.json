@@ -29,7 +29,7 @@
 				}
 			]},
 		{	"name": "storage.type.avdsp",
-			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8)\\b"
+			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8|DSPFSMIN|DSPFSMAX|DSPMANT|DSPFLOAT)\\b"
 		}
 		],
 	"repository": {
@@ -40,7 +40,7 @@
 				
 			},{
 				"name": "keyword.function.avdsp",
-				"match": "\\b(tile|param|core|section|end|send|receive)\\b"
+				"match": "\\b(tile|param|core|section|end|send|receive|DSPFSMIN|DSPFSMAX|DSPMANT|DSPFLOAT)\\b"
 			}]
 		},
 		"avdspfilt": {
