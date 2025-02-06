@@ -29,14 +29,14 @@
 				}
 			]},
 		{	"name": "storage.type.avdsp",
-			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8|DSPFSMIN|DSPFSMAX|DSPMANT|DSPFLOAT)\\b"
+			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8|DSPFSMIN|DSPFSMAX|DSPFSDYN|DSPMANT|DSPFLOAT)\\b"
 		}
 		],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.avdsp",
-				"match": "\\b(nop|input|output|transfer|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatevol|saturategain|delayone|delayus|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquad8|convol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate)\\b"
+				"match": "\\b(nop|input|output|transfer|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatevol|saturategain|delayone|delayus|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquad8|convol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|thdcomp|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate|clrmem|swapmem|addmem|memadd|submem|memsub|mulmem|divmem|avgmem|memavg|negmem|valuemem|savemem|loadmem|inputmem|inputgainmem|gainmem)\\b"
 				
 			},{
 				"name": "keyword.function.avdsp",
@@ -46,7 +46,7 @@
 		"avdspfilt": {
 			"patterns": [{
 				"name": "keyword.other.avdsp",
-				"match": "\\b(LPBE2|LPBE3|LPBE4|LPBE6|LPBE8|HPBE2|HPBE3|HPBE4|HPBE6|HPBE8|LPBE3db2|LPBE3db3|LPBE3db4|LPBE3db6|LPBE3db8|HPBE3db2|HPBE3db3|HPBE3db4|HPBE3db6|HPBE3db8|LPBU2|LPBU3|LPBU4|LPBU6|LPBU8|HPBU2|HPBU3|HPBU4|HPBU6|HPBU8|LPLR2|LPLR3|LPLR4|LPLR6|LPLR8|HPLR2|HPLR3|HPLR4|HPLR6|HPLR8|LP1|HP1|LS1|HS1|AP1|BP0DB|LP2|HP2|LS2|HS2|AP2|PEAK|NOTCH|BPQ|HILB|LT)\\b"
+				"match": "\\b(LPBE2|LPBE3|LPBE4|LPBE6|LPBE8|HPBE2|HPBE3|HPBE4|HPBE6|HPBE8|LPBE3db2|LPBE3db3|LPBE3db4|LPBE3db6|LPBE3db8|HPBE3db2|HPBE3db3|HPBE3db4|HPBE3db6|HPBE3db8|LPBU2|LPBU3|LPBU4|LPBU6|LPBU8|HPBU2|HPBU3|HPBU4|HPBU6|HPBU8|LPLR2|LPLR3|LPLR4|LPLR6|LPLR8|HPLR2|HPLR3|HPLR4|HPLR6|HPLR8|LP1|HP1|LS1|HS1|AP1|BPQ0DB|LP2|HP2|LS2|HS2|AP2|PEAK|NOTCH|BPQ|HILB|LT)\\b"
 			}]
 		},
 		"strings": {

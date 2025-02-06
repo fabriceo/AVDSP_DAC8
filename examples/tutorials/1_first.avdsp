@@ -1,0 +1,14 @@
+# a first program for testing
+
+left    16
+right   17
+
+rew1    24
+rew2    25
+
+core
+    input left          # load memory 16 in accumulator X
+    output rew1         # store accumulator X in memory 24
+        gain -5db       # apply a -3db reduction on accumulator X
+    output rew2         # store accumulator X in memory location 25
+end

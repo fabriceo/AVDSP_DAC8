@@ -1,0 +1,23 @@
+# Lipsitch Vanderkoy Substractive filter
+
+include "dac8pro0.avd"
+
+left = USBhost0 ; right = USBhost1
+fc		600
+bessel8	LPBE8(fc)		# low pass Bessel filter 8th order
+gd	=	986000/fc		# formula for group delay for bessel8 at fc
+
+core	
+    transfer (16,24)	# signal for REW reference
+
+	input left	        #get sample from usb channel 1 (left)
+	    copyxy		    #copy X into Y
+	    biquad bessel8	#compute lowpass
+	output rew2	        #output to REW channel 2
+	    swapxy		    #getback Y into X
+	    delaydpus gd	#dual precision delay line
+	    subxy		    #compute high pass by doing X = X - Y (where Y is lowpass)
+	output rew3	        #output to REW channel 3
+	    addxy		    #sum signals to check resulting wave
+	output rew4	        #output to REW channel 4
+end

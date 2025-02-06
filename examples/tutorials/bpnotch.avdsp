@@ -1,0 +1,22 @@
+DSPMANT 29,60
+
+fc 1000
+Q 3
+
+bp    BP0DB(fc,Q) BP0DB(fc,Q) BP0DB(fc,Q)
+no    NOTCH(1000,10)
+core
+
+    input 16
+    output 24
+        biquad bp
+    output 25
+        negx
+        copyxy
+    input 16
+        biquad no
+    output 26
+        addxy
+    output 27
+
+end

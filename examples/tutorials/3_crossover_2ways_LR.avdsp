@@ -1,0 +1,31 @@
+# crossover 2x2 way
+DSPDYNFS 0
+include "dac8pro0.avd"
+
+left = USBhost0 ; right = USBhost1
+
+lowpass     LPLR4(400) PEAK(  50, 4,-4db)
+highpass    HPLR4(400) PEAK(4000, 1, 3db) 
+highpass2   HPLR4(400) PEAK(4000, 1, 3db) HS1(8000, -3db)
+
+core
+    input left
+    output rew1
+        biquad lowpass
+    output rew2
+
+    input left
+        biquad highpass
+        delayus 2000
+    output rew3
+
+core
+    input right
+        biquad lowpass
+    output rew4
+
+    input right
+        biquad highpass2
+        delayus 2000
+    output rew5
+end

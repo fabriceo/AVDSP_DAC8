@@ -1,0 +1,126 @@
+### IO definitions for DAC8PRO
+### each channels between 0..7
+DSPFSMIN 44100 ; DSPFSMAX 192000 ; DSPMANT 28
+#-file dac8pro0.avd : IO declaration
+DAC		0                   #base address in memory
+AES		8
+USBOUT	16
+USBIN	24
+USBout	16
+USBhost 16
+USBin	24
+fromUSB	16
+toUSB	24
+
+core4exist	x1000           #pattern to detect existence of core4
+core5exist	x2000
+core6exist	x4000
+core7exist	x8000
+
+fs48k		b11100000000    #pattern to detect when DAC8 is in 48k
+fs96k		b11010000000
+fs192k		b10110000000
+
+pureusb		1               #pattern to detect when DAC8 is in PureUSB mode
+usbaes		4
+pureaes		8
+pureaes2	x20
+pureaes3	x40
+pureaes4	x80
+anysource	15
+
+### to DAC outputs
+
+dac		= DAC        
+dac0	= dac[0]            #proposed naming for memory attached to DAC outputs
+dac1	= dac[1]
+dac2	= dac[2]
+dac3	= dac[3]
+dac4	= dac[4]
+dac5	= dac[5]
+dac6	= dac[6]
+dac7	= dac[7]
+
+### from AES channels
+
+aes		= AES
+aes0	= aes[0]            #proposed naming for memory attached to AES inputs
+aes1	= aes[1]
+aes2	= aes[2]
+aes3	= aes[3]
+aes4	= aes[4]
+aes5	= aes[5]
+aes6	= aes[6]
+aes7	= aes[7]
+
+### form USB host
+
+usbout	= USBOUT
+usbout0	= usbout[0]
+usbout1	= usbout[1]
+usbout2	= usbout[2]
+usbout3	= usbout[3]
+usbout4	= usbout[4]
+usbout5	= usbout[5]
+usbout6	= usbout[6]
+usbout7	= usbout[7]
+
+USBout0	= usbout0
+USBout1	= usbout1
+USBout2	= usbout2
+USBout3	= usbout3
+USBout4	= usbout4
+USBout5	= usbout5
+USBout6	= usbout6
+USBout7	= usbout7
+
+USBhost0= usbout0
+USBhost1= usbout1
+USBhost2= usbout2
+USBhost3= usbout3
+USBhost4= usbout4
+USBhost5= usbout5
+USBhost6= usbout6
+USBhost7= usbout7
+
+### to USB host
+
+usbin	= USBIN
+usbin0	= usbin[0]
+usbin1	= usbin[1]
+usbin2	= usbin[2]
+usbin3	= usbin[3]
+usbin4	= usbin[4]
+usbin5	= usbin[5]
+usbin6	= usbin[6]
+usbin7	= usbin[7]
+
+USBin0  = usbin0
+USBin1  = usbin1
+USBin2  = usbin2
+USBin3  = usbin3
+USBin4  = usbin4
+USBin5  = usbin5
+USBin6  = usbin6
+USBin7  = usbin7
+
+rew1    = usbin0
+rew2    = usbin1
+rew3    = usbin2
+rew4    = usbin3
+rew5    = usbin4
+rew6    = usbin5
+rew7    = usbin6
+rew8    = usbin7
+
+rewL    = USBhost.0
+rewR    = USBhost.1
+rewC    = USBhost.2
+rewLFE  = USBhost.3
+
+#-dac0..dac7 = [dac0]..[dac7], AES = [AES], rewL=[rewL], rewR=[rewR], rew1..8 = [rew1]..[rew8]
+
+### various constants
+
+pi		= 3.1415926
+half	= 0.5

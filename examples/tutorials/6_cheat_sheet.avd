@@ -1,0 +1,137 @@
+# this is a comment starting with "#". 
+# when "#-" is used, the comment is printed in console and [XX] is replaced with XX labels value
+include "dac8pro0.avd"         # used to include usual IO constant declaration. up to 3 levels of include file, firmware above V1.61 only
+#-Cheat sheet for avdsp programs
+#-Constant definition
+OUT     24
+FC      500
+FC      ? 1000                  # set fc to 1000 unless it is already set earlier
+#-label FC = [FC]  : FC not changed
+FC      ?= 1000                 # set fc to 1000 even if it was defined earlier
+#-label FC = [FC] : FC changed
+IN      = 0+8                   # an expression requires "=" before it
+OUT3    = OUT+3                 # refering to a label requires "=" before
+OUT4    = OUT[4]                # the value in [] is simply added to the label "OUT"
+OUT5    = OUT.5                 # the value after "." is simply added to the label "OUT"
+Gain    = 1 - 1/2               # using / or * is higher priority than + and -, no ( ) supported in this version
+Gain0db = 0DB                   # value can be defined in db, dB, Db or DB, result is converted as 10^(val/20)
+Gain_half = 0.5                 # this is equivalent to -6db
+Gain_fourth = -6db - - - 6dB    # this is equivalent to -12db corresponding to 0.2511
+b254	= b11111110             # exemple of binary number
+octal   o01234567               # octal representation, for geek and purists
+hexa    x1234ABCD               # hexadecimal value 
+x123    123 ; xxx = 1+x123+1    # ! existing labels are always prioritized vs hexa or binary or octal values
+percent 10%                     # equivalent to 0.1
+period  20m                     # equivalent to 0.02
+
+#-Core definition
+core                                # define a new core, without conditions
+
+core fs192k, 0                      #define a new core only if the 2 conditions are met : first represent some bits to 1, second represents all bits to 0
+    section fs192k, 0               #define a section executed only if the 2 conditions are met, as for a core
+    section                         #end of previous section or new one if parameters given
+
+#-inputs, outputs, transfer and mixer
+    input IN                        #load memory location into accumulator X
+    inputgain (IN,Gain)             #same with a gain on it
+    output OUT, OUT3, OUT4          #output accumulator X into one or more memory locations
+    outputvol   OUT3, OUT.4         #same but apply master volume before
+    outputvolsat OUT, OUT[3]        #same but verify saturation and apply reduction eventually, and master volume
+    outputtpdf OUT                  #output the accumulator to a memory location and add dithering
+    outputgain (OUT,Gain_fourth)    #output accumulator X in a memory location with a gain
+    transfer (IN, OUT) (IN,OUT)     #transfer from a memory location to another, multiple
+    mixer IN, IN+1, IN+2            #load and summ all the inputs provided on the line. result is NOT scaled
+    mixergain (IN,Gain_half) (IN+1,0.25) (IN+2, 0db)    #load aeach provided input, apply a gain and summ them all
+
+#-memory definition and access 
+size    2
+SAMPLE MEMORY size
+
+    savexmem SAMPLE[0]
+    saveymem SAMPLE[1]
+    loadxmem SAMPLE
+    loadymem SAMPLE.1
+
+#-function on accumulator X and Y
+
+    clrxy ; copyxy ; copyyx ; swapxy
+    addxy ; addyx ; subxy ; subyx
+    avgxy ; avgyx ; negx  ; negy
+    mulxy ; mulyx ; divxy ; divyx
+    valuex 2.3
+    valuey 3.14
+
+#-functions using X only as a source and destination
+
+    gain Gain               # apply a gain or reduction on the signal (-8 min .. +8 max)
+    clip -1db               # clip the signal (positive and negative) wit this value
+    delayus 100             # delay the signal by n microseconds
+    delaydpus 100           # same but dual precision (keeps 64bits precision)
+    delayone                # delay the signal by 1 sample only
+    saturate                # detect saturation and apply reduction eventually
+    saturategain Gain       # apply a gain/reduction and execute saturate
+    saturatevol             # same as saturate but depending on master volume
+    tpdf 23                 # initialize dithering and return triangular noise
+    white                   # generate whitenoise
+    #firmware above V1.61 only
+    delayusfbmix 100, 100%, 20%, 50%, 50%   # delay, %source, %feedback, %delayed, %mix
+    integrator              # integrate the signal, includes a dcblock
+    movingavgus 100         # moving average during n microseconds
+    movingavgn 20           # moving average n samples
+    expmovingavg 0.9        # exponential moving average with alpha (yn=yn-1 + alpha*(xn-yn-1))
+    thdcomp -60db,-80db     # add H2 and H3 harmonics
+
+#-biquad filter definition and filtering function
+
+filter  LPLR4(FC)                   # direct declaration of multiple filters on a ligne or multiple lines with "\"
+filt2   FILTER  HP1(FC) LS1(FC*2)   # will be used in firmware version after V 1.61
+
+    biquad filter
+
+Q = 1 ; G = -3db
+
+#-list of all supported filters.
+#remark : \ is used to continue definition of a single group of filter on the next line
+#remark2: all filters accept an optional gain parameter before the closing bracket, after a coma "," separator
+
+bessel_lowpass  LPBE2(FC) LPBE3(FC) LPBE4(FC) LPBE6(FC) LPBE8(FC)
+bessel_highpass HPBE2(FC) HPBE3(FC) HPBE4(FC) HPBE6(FC) HPBE8(FC)
+bessel_at_3db   LPBE3db2(FC) LPBE3db3(FC) LPBE3db4(FC) LPBE3db6(FC) LPBE3db8(FC) \
+                HPBE3db2(FC) HPBE3db3(FC) HPBE3db4(FC) HPBE3db6(FC) HPBE3db8(FC)
+butterworth     LPBU2(FC) LPBU3(FC) LPBU4(FC) LPBU6(FC) LPBU8(FC) \
+                HPBU2(FC) HPBU3(FC) HPBU4(FC) HPBU6(FC) HPBU8(FC)
+lr              LPLR2(FC) LPLR3(FC) LPLR4(FC) LPLR6(FC) LPLR8(FC) \
+                HPLR2(FC) HPLR3(FC) HPLR4(FC) HPLR6(FC) HPLR8(FC) 
+others          LP1(FC) HP1(FC) LS1(FC) HS1(FC) AP1(FC) \
+                BP0DB(FC,Q) LP2(FC,Q) HP2(FC,Q) LS2(FC,Q) HS2(FC,Q) AP2(FC,Q) \
+                PEAK(FC,Q,G) NOTCH(FC,Q,G) BPQ(FC,Q,G) LT(FC,Q,FC,Q,G)
+
+tile    # tile keyword is used to create other(s) DSP program in same bin file, for multiprocessor purpose. only used in futur versions above V1.61
+
+#-final end statement
+end     
+everything below is ignored !
+
+
+#new functions under devlopment to replace Y register
+
+    clrmem m            # mem = 0
+    swapmem m           # X <- mem, mem <- X
+    addmem m            # X = X + mem
+    memadd m            # mem = mem + X
+    submem m            # X = X - mem
+    memsub m            # mem = mem - X
+    avgmem m            # X = X/2 + mem /2
+    memavg m            # mem = mem/2 + X/2
+    negmem m            # mem = -mem
+    mulmem m            # X = X * mem
+    divmem m            # X = X / mem
+    savemem m           # mem = X
+    loadmem m           # X = mem
+
+    valuemem m,4.0      # mem = value 32bits -8..+8
+    inputmem m,16        # mem = input 16
+    inputgainmem m,(16,3db)    # mem = input 16 * gain
+    gainmem m,3db       # mem = mem * gain
+
+

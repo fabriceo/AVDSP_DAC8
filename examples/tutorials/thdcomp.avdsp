@@ -1,0 +1,30 @@
+
+x2      MEMORY  1
+x3      MEMORY  1
+c2x2    MEMORY  1
+c3x3    MEMORY  1
+
+c2  -60db
+c3  = -80db
+
+core   
+    input 16
+    output 24
+    copyxy
+    mulyx
+    saveymem x2
+    valuex c2
+    mulyx
+    saveymem c2x2
+    loadymem x2
+    input 16
+    mulyx
+    valuex c3
+    gain 2
+    mulyx
+    loadxmem c2x2
+    addyx
+    input 16
+    addxy
+    output 25
+

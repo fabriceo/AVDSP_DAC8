@@ -1,0 +1,37 @@
+# crossover 2x2 way + Sub
+
+include "dac8pro0.avd"
+
+left = USBhost0 ; right = USBhost1
+fsub=100 ; fcross=400
+
+lowpass     HPBU4(fsub) LPLR4(fcross) PEAK(50, 4, -4db)
+highpass    HPLR4(fcross) PEAK(1000, 3db) 
+lowsub      LPBU4(fsub)
+
+core
+    transfer (left,rew1)    #provide feedback for reference in REW
+ 
+    input left
+        biquad lowpass
+    output rew2
+
+    input left
+        biquad highpass
+        delayus 2000
+    output rew3
+
+core
+    input right
+        biquad lowpass
+    output rew4
+
+    input right
+        biquad highpass
+        delayus 2000
+    output rew5
+
+    mixergain (left, -6db),(right, -6db)
+        biquad lowsub
+    output rew6
+end
