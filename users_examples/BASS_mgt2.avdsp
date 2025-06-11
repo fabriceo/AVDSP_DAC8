@@ -1,168 +1,247 @@
 
 ## Example for bass management 5.1.2
-## optimized for 192khz
-## each output to dac can be replaced by outputvolsat to avoid any risk of saturation.
+## optimized for 192khz, no EQ possible. EQ possible up to 96k
+## in 96k each output to dac can be replaced by outputvolsat to avoid any risk of saturation.
 ## the LFE channel is increased by 10db, another possibility is to reduce each other channels by -10db of course
-## each channel is going trough an LR4 crossover and is considered as "small"
-## the low pass part of the signal is sent to the SUB channel.
+## each channel is going trough a filter bank including LR4 high pass
+## each channel also goes trough a low pass LR4 for SUB 
+## possibility to choose if the center channel low freq is sent to FRONT or to SUB directly
 
-## DAC output assignement 
+# CHOOSE one or the other mode for CENTRE channel HERE only
+mode_centre_to_front ? 1		# 1 otherwise 0 to direct centre channel low freq to sub
 
-L			0
-R			1
-C			2
-SUB			3
-LS			4
-RS			5
-Ltm			6	#overhead speakers for dolby atmos
-Rtm			7
+## DAC output assignement , can be changed by user
 
-## USB inputs definition. Same for AES due to internal loopback in xmos
+DAC_L			0
+DAC_R			1
+DAC_C			2
+DAC_SUB			3
+DAC_LS			4
+DAC_RS			5
+DAC_Ltm			6	#overhead speakers for dolby atmos
+DAC_Rtm			7
 
-Lin			16
-Rin			17
-Cin			18
-LFEin		19
-LSin		20
-RSin		21
-Ltmin		22	#not used in case of AES inputs with dac8prodsp5 firmware
-Rtmin		23	#not used in case of AES inputs with dac8prodsp5 firmware
+## key frequencies for individual crossover, can be changed freely
 
-## key frequencies for individual crossover (large/small)
-
-F_LARGE		40		# crossover frequency for Large speakers (front)
-F_SMALL		80		# crossover frequency for Small speakers
-
-bessel6		LPBE6(F_LARGE)	# bessel6 used for substractive crossover
-gdbe6		= 700000/F_LARGE	# group delay for a bessel6 filter (in microseconds)
-gdlr4		= 500000/F_SMALL	# group delay of the LR4 filter used for small speakers
-gdalign		= gdbe6	- gdlr4		# delay for alligning the 5 other small speakers
+Fc_FRONT		35		# crossover frequency for both front speakers
+Fc_CENTRE		60		# crossover frequency for centre channel
+Fc_SUR			80		# crossover frequency for both surround speakers 
+Fc_SURtm		100		# crossover frequency for head speakers
+Fc_SUB			1000	# optional low pass cut off frequency for subwoofer (typically 200..260). The defautl 1000hz doesnt impact phase in low frequency region
 
 ## filters definition for each output including some optional PEQ correction (set at 0db by default)
 
-#front large speakers will have 2nd order high pass via substractive filter process
-F_L			PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) PEAK(4000, 0.7, 0db) 
-F_R			PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) PEAK(4000, 0.7, 0db) 
+# for KH O300 which behave almost as high pass LR4
+# a simple LT is done to push the cutoff few hertz left, to avoid saturation in bass (closed box)
+F_FRONT_HP		LT(36,0.75,45,0.75) 	# this also requires a delay value of 3000 in PH_FRONT
+# for other speakers, uncomment line below instead to follow a classical LR approach
+#F_FRONT		HPLR4( Fc_FRONT )
+F_FRONT_EQ		PEAK(400,1,0db)			# optional EQ for 44..96k
+F_FRONT_SUB		LPLR4( Fc_FRONT )
 
-#other "small" speakers will have there own highpass chossen as Linkwitz riley 4th order
-F_C			HPLR4( F_SMALL ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
-F_LS		HPLR4( F_SMALL ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
-F_RS		HPLR4( F_SMALL ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
-F_Ltm		HPLR4( F_SMALL ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
-F_Rtm		HPLR4( F_SMALL ) PEAK(1000, 0.7, 0db) PEAK(2000, 0.7, 0db) 
+# center speaker filter bank
+F_CENTRE_HP		HPLR4( Fc_CENTRE ) 		# only high pass filter allowed at 192k
+F_CENTRE_EQ		PEAK( 1000, 1, 0db ) 	# optional EQ for 44..96k
+F_CENTRE_SUB	LPLR4( Fc_CENTRE )	PEAK(400,1,0db)
 
-F_LPsmall	LPLR4( F_SMALL )
+# surround speakers filter
+F_SUR_HP		HPLR4( Fc_SUR ) 		# only high pass filter allowed at 192k
+F_SUR_EQ		PEAK( 1000, 1, 0db ) 	# optional EQ for 44..96k
+F_SUR_SUB		LPLR4( Fc_SUR )
 
-#correction for room mode for subwoofer (default to 0db). Can include a low pass
-F_SUB		PEAK(80, 0.7, 0db) PEAK(100, 0.7, 0db) PEAK(120, 0.7, 0db) 
+# overhead surround at 192khz, need to be managed like surround
+F_SURtm_HP		HPLR4( Fc_SURtm )		# only high pass filter allowed at 192k
+F_SURtm_EQ		PEAK( 1000, 1, 0db )	# optional EQ for 44..96k
+F_SURtm_SUB		LPLR4( Fc_SURtm )
+
+# optional subwoofer low pass as a butterworth 2nd order
+F_SUB			LPBU2( Fc_SUB )
 
 ## bank of delays given in microseconds to correct speaker distance at listening point
 ## each value should be computed based on 343m/seconds and the value should be relative to the farest speaker.
 ## example : if farest is at 4m from listening position (example mains L & R)) and if center is at 3.8m
 ## then the center should be delayed by (4-3.8)/343*1000000 = 583us
+delayratio	= 1000000/343	# typical ratio to compute number of microseconds based on distance in meters for typical sound speed
 
-D_L		100
-D_R		100
-D_C		100
-D_SUB	100
-D_LS	100
-D_RS	100
-D_Ltm	100
-D_Rtm	100
+DEL_L		=	100			# or can use a formula based on distance like = dist * delayratio
+DEL_R		=	100
+DEL_C		=	100
+DEL_SUB		=	100
+DEL_LS		=	100
+DEL_RS		=	100
+DEL_Ltm		=	100
+DEL_Rtm		=	100
 
-## special outputs to USB host for testing with REW only
+# additional delays to correct phase shift due to difference in crossover frequency
+# EXPERIMENTAL, treated as comments for time being
 
-REW1		24	# correspond to input channel 1 in REW menus
-REW2		25
-REW3		26
-REW4		27
-REW5		28
-REW6		29
+PH_FRONT		3000	#special value for K&H O 300 coherence
 
-## progam. 
-Lsub	MEMORY 1
-LRsub	MEMORY 1
+## USB inputs definition. Same for AES due to internal loopback in xmos when in PureAES mode
 
-core	#core 1 , in charge of Front Left
+Lin				16
+Rin				17
+Cin				18
+LFEin			19
+LSin			20
+RSin			21
+Ltmin			22	#not used in case of AES inputs with dac8prodsp5 firmware
+Rtmin			23	#not used in case of AES inputs with dac8prodsp5 firmware
 
-	input 	Lin
-	copyxy
-	biquad bessel6
-	swapxy
-	delaydpus gdbe6
-	subxy
-	biquad 	F_L
-	delayus	D_L
-	output 	L,REW2		#can be changed by outputvolsat
-	saveymem Lsub		#saving the sub channel
+C_SUB			26	#special usage of an output location for handling the value of the centre low freq
 
-	section b1000	#only when in pureAES
+## special outputs definition to USB host only for testing with REW
+
+REW1		24	; R_LOOPBACK = REW1	# correspond to input channel 1 in REW menus, as a straight loopback reference
+REW2		25	; R_FRONT = REW2	# response of FRONT
+REW3		26						# response for center channel
+REW4		27	; R_LCR_SUB = REW4	# response of SUB for FRONT and CENTRE only
+REW5		28	; R_SUM_LCRS = REW5	# sum of FRONT+CENTRE+SUB to show acoustic coherence
+REW6		29	; R_SUR = REW6		# SUR response
+REW7		30	; R_SURtm = REW7	# SURtm response
+REW8		31	; R_SUB = REW8		# total SUB response including LFE
+
+# intermediate memory location to hold part of signals
+M_LCR_SUB	MEMORY 1
+M_SUR_SUB	MEMORY 1
+M_SURtm_SUB MEMORY 1
+
+# dont modify formula below which are used to enable or disable a core according to mode choosen
+core_enabled_when_centre_to_front 	= mode_centre_to_front * 15
+core_enabled_when_centre_to_sub 	= 15 - core_enabled_when_centre_to_front
+
+PureUSB		3	# pattern to enable a core only when in PureUSB mode
+PureAES		8	# pattern to enable a core only when in PureAES mode
+F192K		x400	# pattern to enable core when frequency is 176 or 192k
+F44_96k		x300	# pattern to enable core when frequency is between 44..96k
+
+### BASS MANAGEMENT PROGRAM ####
+
+## CORE 1 : in charge of Ltm, Rtm , this one ONLY activated in pureUSB
+core PureUSB		
+
+#	transfer ( 16, R_LOOPBACK )  # provide a straight loopback reference signal to REW for timing reference
+	transfer ( Lin, R_LOOPBACK ) #( Lin, Rin) #(Lin, Cin) # used during test, to send the Lef signal also
+
+	input 		Ltmin
+	biquad		F_SUR_HP
+	delayus		DEL_Ltm
+	output 		DAC_Ltm , R_SURtm
+#	outputvolsat DAC_Ltm
+	
+	input 		Rtmin
+	biquad		F_SUR_HP
+	delayus		DEL_Rtm
+	output 		DAC_Rtm
+#	outputvolsat DAC_Rtm
+
+core PureAES		# this one ONLY activated in PureAES
 	transfer (8,24) (9,25) (10,26) (11,27) (12,28) (13,29)	#feedback to xmos for loopback to 16..21
-	section
 
-core	#core 2 , in charge of Front Right
-	input 	Rin
+
+## CORE 2 : in charge of Front Left and Right, enabled when mode is "center to front"
+core core_enabled_when_centre_to_front	
+
+	input 		Cin 			# get center channel 
+	biquad 		F_CENTRE_SUB	# extract low freq only. Divide by 2 could be combine in the filter definition instead
+	outputgain	( C_SUB , -6db )# save in temporary output, divide by 2 as it is used on both L & R speakers
+
+	mixer 		Lin , C_SUB		# combine Left channel with above result
+	biquad 		F_FRONT_HP		# filtering Front Left (high pass and EQ)
+	delayus		DEL_L			# adjusting delay for distance
+	output 		DAC_L , R_FRONT
+#	outputvolsat DAC_L 			# alternative output when ready for "production"
+
+	mixer 		Rin , C_SUB
+	biquad 		F_FRONT_HP		# same filtering as Right channel to keep phase coherence across L/R speakers. This can be changed
+	delayus		DEL_R
+	output 		DAC_R
+#	outputvolsat DAC_R
+
+
+core core_enabled_when_centre_to_sub	# enabled when mode is "center to sub"
+
+	input 		Lin
+	biquad 		F_FRONT_HP		# filtering Front Left
+	delayus		DEL_L			# adjusting delay for distance
+	output 		DAC_L , R_FRONT
+#	outputvolsat DAC_L 			# alternative output when ready for "production"
+
+	input 		Rin
+	biquad 		F_FRONT_HP		# same filtering as Right channel to keep phase coherence across L/R speakers. This can be changed
+	delayus		DEL_R
+	output 		DAC_R
+#	outputvolsat DAC_R
+
+
+## CORE 3 : in charge of surround speakers LS, RS 
+core
+	
+	input 		LSin
+	biquad 		F_SUR_HP
+	delayus		DEL_LS
+	output 		DAC_LS , R_SUR
+#	outputvolsat DAC_LS
+	
+	input 		RSin
+	biquad 		F_SUR_HP		# same filter bank as for left channel. This can be changed
+	delayus		DEL_RS
+	output 		DAC_RS
+#	outputvolsat DAC_RS
+
+
+## CORE 4 : in charge of extracting low freq from Front Left, Right, and filtering center 
+core core_enabled_when_centre_to_front	
+
+	input 		Cin
+	biquad 		F_CENTRE_HP		# filtering center channel (high pass and EQ)
+	delayus		DEL_C
+	output 		DAC_C
+#	outputvolsat DAC_C
+
+	mixer 		Lin, Rin, C_SUB, C_SUB	# trick, here C_SUB is NOT delayed by 1 sample because it was compute (eventually) at the very begining of core 1
+	biquad 		F_FRONT_SUB
+	delayus		PH_FRONT		# used with K&H O 300 to compensate phase with front speakers as we just use LT	
+#	output 		R_LCR_SUB		# send to REW for measurement. Can be removed when in "production"
+	savexmem 	M_LCR_SUB		# save result for core 4
+
+## CORE 4 : in charge of extracting low freq from Front Left+Right and Center, and filtering center
+core core_enabled_when_centre_to_sub
+
+	mixer 		Lin, Rin
+	biquad 		F_FRONT_SUB
+	delayus		PH_FRONT	# used for K&H O 300 to compensate phase for accoustic sum		
 	copyxy
-	biquad bessel6
-	swapxy
-	delaydpus gdbe6
-	subxy
-	biquad 	F_R
-	delayus	D_R
-	output 	R		#can be changed by outputvolsat
 
-	loadxmem Lsub
-	addxy			#compute subwoofer value
-	savexmem LRsub	#save it in temp memory as we need also to add the other 5 channels
+	input 		Cin
+	biquad 		F_CENTRE_SUB
+	addxy
 
-core	#core 3 , in charge of C, LS, RS 
+	output 		R_LCR_SUB
+	savexmem 	M_LCR_SUB		# save LCR low freq for intergation in core 4
 
-	input 	Cin
-	delaydpus gdalign		# to compensate front speaker delayed by gdbe6
-	biquad 	F_C
-	delayus	D_C
-	output 	C
-	
-	input 	LSin
-	delaydpus gdalign
-	biquad 	F_LS
-	delayus	D_LS
-	output 	LS
-	
-	input 	RSin
-	delaydpus gdalign
-	biquad 	F_RS
-	delayus	D_RS
-	output 	RS
+	input 		Cin
+	biquad 		F_CENTRE_HP
+	delayus		DEL_C
+	output 		DAC_C
+#	outputvolsat DAC_C
 
 
-core	#core 4 , in charge of Ltm, Rtm 
+## CORE 5 : in charge of subwoofer output
+core
 
-	section 3	# only if PureUSB , we send results to rew channels. They have 1 sample delay
-	transfer (16,REW1)
-	section
+	mixer 		LSin , RSin, Ltmin , Rtmin
+	biquad		F_SUR_SUB		# compute X with surround low freq
+	copyxy
+	loadymem 	M_LCR_SUB		# load Y with already calculated LCR low freq (core 2)
+	addyx						# Y = Y + X
 
-	input 	LSin
-	delayus gdalign
-	biquad 	F_LS
-	delayus	D_LS
-	output 	LS
-	
-	input 	RSin
-	delayus gdalign
-	biquad 	F_RS
-	delayus	D_RS
-	output 	RS
+	mixergain 	( LFEin, 10db ) #( R_LCR_SUB,1 )	# get LFE channel and apply 10db gain
+	addxy						# X = X + Y
+	biquad 		F_SUB			# apply specific biquad filtering for sub
+	delayus		DEL_SUB
+	output 		DAC_SUB , R_SUB
+#	outputvolsat DAC_SUB
 
-
-core	#core 5 , in charge of LFE output
-
-	mixergain ( Cin,1 ) ( LSin,1 ) ( RSin,1 ) ( Ltmin,1 ) ( Rtmin,1 ) ( LFEin,10db )
-	biquad	F_LPsmall	# x now contains LF signeal from 5 small speakers.
-	loadymem LRsub
-	addxy				#x now contains the total LF signal
-	biquad 	F_SUB		# apply specific biquad on LFE
-	delayus	D_SUB
-	output 	SUB,REW4
 
 end
