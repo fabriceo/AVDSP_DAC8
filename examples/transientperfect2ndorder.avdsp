@@ -1,0 +1,85 @@
+# this is a 2nd order crossover at fc with almost transient perfect behaviour. from:
+# http://web.archive.org/web/20090809205449/http://www.geocities.com/kreskovs/CrossoverdocN3.html
+# each channel is increaded with a gain, to compensate consequence of sumation
+
+Left	16
+REW1 24 ; REW2 25 ; REW3 26 ; REW4 27 ; REW5 28 ; REW6 29 ; REW7 30
+REW8 31
+
+
+lambda 	= 1.6	# choose between 1.6 to 2.0 max
+fc 		= 1000
+fhp 	= fc/lambda	# here f high pass is below f lowpass!
+flp 	= fc*lambda
+
+lambda2 = lambda * lambda
+l2p1 	= lambda2 + 1
+l2m1 	= lambda2 - 1
+
+Qf 		= lambda / l2p1
+Qeq		= 1 / l2m1
+Geq 	= 1 + 1 / lambda2 + 2 / lambda2 / l2m1
+
+#-*** Transient Perfect Filter 2nd order   ***
+#-*** based on work from John Kreskovsky   ***
+#-*** formula results for lamda = [lambda] ***
+#-*** flp [flp], fhp [fhp], Qf [Qf]       ***
+#-*** Qeq [Qeq], Geq [Geq]           ***
+
+lp	LP2(flp,Qf) PEAK(fc,Qeq,Geq)
+hp  HP2(fhp,Qf) PEAK(fc,Qeq,Geq)
+
+core
+	transfer ( Left, REW1 )	# loopback for rew timing reference
+	
+	input Left
+	biquad lp
+	copyxy
+	output REW2	# low pass filter with Eq
+	
+	input Left
+	biquad hp
+	addyx
+	output REW3	# high pass filter with Eq
+	
+	swapxy
+	
+	output REW4	# sum of the 2 filters
+	
+core
+
+#-*** now Substractive filter with bessel 4/6/8 low pass. ***
+
+lplr4	LPLR4(fc)		# for comparaison
+hplr4	HPLR4(fc)
+
+fbe4 	= fc * 1.114   #rough factor for bessel4 crossover point equivalence
+gdbe4	= 510000/fbe4
+lpbe4	LPBE4(fbe4)
+
+fbe6 	= fc * 1.256   #rough factor for bessel6 equivalence
+gdbe6	= 745300/fbe6	
+lpbe6	LPBE6(fbe6)
+
+fbe8 	= fc * 1.4   	#rough factor for bessel8 equivalence
+gdbe8	= 986000/fbe8
+lpbe8	LPBE8(fbe8)
+
+#-*** fc [fc], fbe4 [fbe4], fbe6 [fbe6], fbe8 [fbe8]
+
+	input Left
+	copyxy
+	biquad lpbe4		#can change for 4 / 6 / 8
+	output REW5
+	swapxy
+	delayus gdbe4		#can change for 4 / 6 / 8
+	subxy
+	output REW6
+	addxy
+	output REW7
+	
+	input Left
+	biquad hplr4		# can change lplr4 by hplr4, for curve comparaison
+	output REW8
+end
+
