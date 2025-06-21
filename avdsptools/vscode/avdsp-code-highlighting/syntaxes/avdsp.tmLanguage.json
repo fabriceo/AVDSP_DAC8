@@ -40,7 +40,7 @@
 				
 			},{
 				"name": "keyword.function.avdsp",
-				"match": "\\b(tile|param|core|section|coreextern|end|send|receive|DSPFSMIN|DSPFSMAX|DSPMANT|DSPFLOAT)\\b"
+				"match": "\\b(tile|param|core|section|sectionelse|coreextern|end|send|receive)\\b"
 			}]
 		},
 		"avdspfilt": {
