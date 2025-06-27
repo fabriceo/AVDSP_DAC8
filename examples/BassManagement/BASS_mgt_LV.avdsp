@@ -5,11 +5,10 @@
 ## the LFE channel is increased by 10db
 ## possibility to choose if the center channel low freq is sent to FRONT, or to SUB directly
 
-DSPMANT 28,56           
-
-# CHOOSE one or the other mode for CENTRE channel HERE only
-mode_centre_to_front ? 0		# 1 otherwise 0 to direct centre channel low freq to sub
-MCF ?= mode_centre_to_front
+DSPMANT  28,56
+DSPCLOCK 560,496,528,0
+DSPFSMIN 44100
+DSPFSMAX 192000
 
 ## DAC output assignement , can be changed by user
 
@@ -25,9 +24,9 @@ DAC_Rtm			7
 ## key frequencies for individual crossover, can be changed freely
 
 Fc_FRONT		40		# crossover frequency for both front speakers
-Fc_CENTRE		80		# crossover frequency for centre channel
-Fc_SUR			100		# crossover frequency for both surround speakers 
-Fc_SURtm		100		# crossover frequency for head speakers
+Fc_CENTRE		60		# crossover frequency for centre channel
+Fc_SUR			80		# crossover frequency for both surround speakers 
+Fc_SURtm		120		# crossover frequency for head speakers
 Fc_SUB			1000	# optional low pass cut off frequency for subwoofer (typically 200..260). The defautl 1000hz doesnt impact phase in low frequency region
 
 cbe4    1.114   # magic coefficient to shift crossover point for LV4 filters
@@ -44,20 +43,20 @@ F_FRONT_EQ		PEAK(400,1,0db)	PEAK(800,1,0db)	PEAK(1600,1,0db) PEAK(1600,1,0db) PE
 F_FRONT_SUB		LPBE4( Fc_FRONT * cbe4 )
 
 # center speaker filter bank
-F_CENTRE_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db )  HS2(8000,1,0db)		# optional EQ for 44..96k
+F_CENTRE_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db )  PEAK( 2000,1,0db )  HS2(8000,1,0db)		# optional EQ for 44..96k
 F_CENTRE_SUB	LPBE4( Fc_CENTRE * cbe4 )
 F_CENTRE_SUB_DIV2	LPBE4( Fc_CENTRE * cbe4, 0.5 )  # same with - 6db
 
 # surround speakers filter
-F_SUR_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db ) PEAK( 3000,1,0db )  HS2(8000,1,0db)		# optional EQ for 44..96k
+F_SUR_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db ) PEAK( 3000,1,0db )  #HS2(8000,1,0db)		# optional EQ for 44..96k
 F_SUR_SUB		LPBE4( Fc_SUR * cbe4 )
 
 # overhead surround at 192khz, need to be managed like surround
-F_SURtm_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db ) HS2(8000,1,0db)	
+F_SURtm_EQ		PEAK( 1000,1,0db ) #PEAK( 2000,1,0db ) # HS2(8000,1,0db)	
 F_SURtm_SUB		LPBE4( Fc_SURtm * cbe4 )
 
 # optional subwoofer low pass as a butterworth 2nd order
-F_SUB			PEAK( 80,1,0db ) LPBE2( Fc_SUB )
+F_SUB			PEAK( 80,1,0db ) PEAK( 80,1,0db ) #LPBE2( Fc_SUB )
 
 ## bank of delays given in microseconds to correct speaker distance at listening point
 ## each value should be computed based on 343m/seconds and the value should be relative to the farest speaker.
@@ -65,20 +64,20 @@ F_SUB			PEAK( 80,1,0db ) LPBE2( Fc_SUB )
 ## then the center should be delayed by (4-3.8)/343*1000000 = 583us
 delayratio	= 1000000/343	# typical ratio to compute number of microseconds based on distance in meters for typical sound speed
 
-DEL_L		=	100			# or can use a formula based on distance like = dist * delayratio
-DEL_R		=	100
-DEL_C		=	100
-DEL_SUB		=	100
-DEL_LS		=	100
-DEL_RS		=	100
-DEL_Ltm		=	100
-DEL_Rtm		=	100
+DEL_L		=	100	# 1200		# or can use a formula based on distance like = dist * delayratio
+DEL_R		=	100 # 1200
+DEL_C		=	100 #  400
+DEL_SUB		=	100 # 1400
+DEL_LS		=	100 # 2800
+DEL_RS		=	100 # 2000
+DEL_Ltm		=	100 #  500
+DEL_Rtm		=	10000 #    0
 
 # formula below should not be changed. This is the equivalent delay for the bessel 4 filters at respective fc
-DEL_FRONT_LV4     = dbe4 / Fc_FRONT / cbe4
-DEL_CENTRE_LV4    = dbe4 / Fc_CENTRE / cbe4
-DEL_SUR_LV4       = dbe4 / Fc_SUR / cbe4
-DEL_SURtm_LV4     = dbe4 / Fc_SURtm / cbe4
+DEL_FRONT_BES     = dbe4 / Fc_FRONT / cbe4
+DEL_CENTRE_BES    = dbe4 / Fc_CENTRE / cbe4
+DEL_SUR_BES       = dbe4 / Fc_SUR / cbe4
+DEL_SURtm_BES     = dbe4 / Fc_SURtm / cbe4
 
 ## USB inputs definition. Same for AES due to internal loopback in xmos when in PureAES mode
 
@@ -108,10 +107,12 @@ REW8		31	; # used for sharing centre low freq (C_SUB)
 M_L_SUB	        MEMORY 1    # low freq part of the left channel
 M_R_SUB	        MEMORY 1
 M_C_SUB	        MEMORY 1
+M_C_TEMP        MEMORY 1
 M_LS_SUB	    MEMORY 1
 M_RS_SUB	    MEMORY 1
 M_Ltm_SUB       MEMORY 1
 M_Rtm_SUB       MEMORY 1
+
 M_L	            MEMORY 1    # high freq part of the left channel
 M_R	            MEMORY 1
 M_C	            MEMORY 1
@@ -121,12 +122,14 @@ M_Ltm           MEMORY 1
 M_Rtm           MEMORY 1
 M_SUB	        MEMORY 1    # resulting sub channel including LFE
 
-# dont modify formula below which are used to enable or disable a core according to mode choosen
-core_enabled_when_centre_to_front 	= mode_centre_to_front * 15
-core_enabled_when_centre_to_sub 	= 15 - core_enabled_when_centre_to_front
-
 PureUSB		3	    # pattern to enable a core only when in PureUSB mode
 PureAES		8	    # pattern to enable a core only when in PureAES mode
+PureUSB_or_PureAES  = PureUSB+PureAES
+not192k     x400
+only192k    xB00
+onlyAES1    b11100000
+USB_AES     4
+
 
 #################################################################
 ####           BASS MANAGEMENT PROGRAM                       ####
@@ -136,64 +139,79 @@ PureAES		8	    # pattern to enable a core only when in PureAES mode
 ####                                                         ####        
 #################################################################
 
-coreextern PureAES,0,1      # this statement is used to launch the first spdif decoding core (AES2) in paralell
-coreextern PureAES,0,1      # this statement is used to launch the second spdif decoding core (AES3) in paralell
+coreaes PureAES,onlyAES1      # this statement is used to launch the first spdif decoding core (on AES2) 
+coreaes PureAES,onlyAES1      # this statement is used to launch the second spdif decoding core (on AES3) 
+                              # AES4 can be used as a stereo channel, selecting PureAES4 on the display
+core USB_AES
+    #passthrough, no any treatment !!!
+    transfer (8,24) (9,25) (10,26) (11,27) (12,28) (13,29) (14,30) (15,31)
+    transfer (16,0) (17,1) (18,2) (19,3) (20,4) (21,5) (22,6) (23,7)
 
+#-# CORE 1 : in charge of FRONT LEFT
+core PureUSB_or_PureAES
 
-## CORE 1 : in charge of Left
-core
-
-	mixer 		Lin , C_SUB		# combine Left channel with C_SUB result (one sample delayed, neglected)
+	input 		Lin
     copyxy
     biquad      F_FRONT_SUB
     savexmem    M_L_SUB         # save low freq of the front left signal
     swapxy
-    delayus     DEL_FRONT_LV4
-    subxy                       # compute high pass
+    delayus     DEL_FRONT_BES
+    subxy                       # compute front high pass
+    addmem      M_C_TEMP        # eventually add the residual center low freq
+	biquad 		F_FRONT_EQ		# eventually filtering Front Left (EQ)
     savexmem    M_L
-#	biquad 		F_FRONT_EQ		# eventually filtering Front Left (EQ)
 	delayus		DEL_L			# adjusting delay for distance
-	output 		DAC_L , REW_FRONT
+	output 		DAC_L
 #	outputvolsat DAC_L 			# alternative output when ready for "production"
 
-    section PureAES     # LS is managed here in PureAES only
-    input 		LSin
-    delayus     DEL_FRONT_LV4 - DEL_SUR_LV4
+    section PureAES,not192k     # LS is managed here in PureAES only and only for 44..96k
+    mixer 		LSin , Lin
+    delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
     savexmem    M_LS_SUB        # save low freq
     swapxy
-    delayus     DEL_SUR_LV4
+    delayus     DEL_SUR_BES
     subxy                       # compute 2nd order high pass
-#    biquad      F_SUR_EQ        # equalize eventually with some PEQs 
+    biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     savexmem    M_LS
 	delayus		DEL_LS          # distance allignement
 	output 		DAC_LS 
 #	outputvolsat DAC_LS
 
+    sectionelse PureAES,only192k    #special case if PureAES and 192k : simplified treatment, just delayed
+    input       LSin
+    delayus     DEL_FRONT_BES       # alignement with Front crossover
+    delayus     DEL_LS
+    output      DAC_LS
+#    outputvolsat DAC_LS
 
-## CORE 2 : in charge of Right
-core
-	mixer 		Rin , C_SUB		# combine Left channel with above result
+#-# CORE 2 : in charge of Right
+core PureUSB_or_PureAES
+	input 		Rin
     copyxy
     biquad      F_FRONT_SUB
     savexmem    M_R_SUB
     swapxy
-    delayus     DEL_FRONT_LV4
+    delayus     DEL_FRONT_BES
     subxy
+    addmem      M_C_TEMP        # eventually add the residual center low freq
+	biquad 		F_FRONT_EQ		# filtering Front Left (EQ)
     savexmem    M_R
-#	biquad 		F_FRONT_EQ		# filtering Front Left (EQ)
 	delayus		DEL_R			# adjusting delay for distance
-	output 		DAC_R
+	output 		DAC_R , REW_FRONT
 #	outputvolsat DAC_R 			# alternative output when ready for "production"
 
-section PureAES	# RS is managed here in Pure AES
-    input 		RSin
-    delayus     DEL_FRONT_LV4 - DEL_SUR_LV4
+
+section PureAES,not192k	        # RS is managed in this core when in Pure AES, to reduce total number of core to reduce impact on AES spdif decoding
+
+    mixer 		RSin, Rin
+    delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
-    savexmem    M_RS_SUB        # save low freq    swapxy
-    delayus     DEL_SUR_LV4
+    savexmem    M_RS_SUB        # save low freq    
+    swapxy
+    delayus     DEL_SUR_BES
     subxy                       # compute high pass
     biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     savexmem    M_RS
@@ -201,113 +219,155 @@ section PureAES	# RS is managed here in Pure AES
 	output 		DAC_RS , REW_SUR
 #	outputvolsat DAC_RS
 
+    sectionelse PureAES,only192k
+    mixer       RSin, Rin
+    delayus     DEL_FRONT_BES
+    delayus     DEL_RS
+    output      DAC_RS
+#    outputvolsat DAC_RS
 
-## CORE 3 : in charge of Subwoofer and Centre
-core
+## CORE 3 : in charge of Subwoofer only
+core PureUSB_or_PureAES
 
-    # subwoofer
+    #this is to demonstrate that the sum of all signals is OKAY on 5.1 !
+    mixermem    M_L, M_R, M_C, M_RS, M_LS, M_SUB
+    output      REW_SUM
+
 	inputgain 	( LFEin, 10db )
+    delayus     DEL_FRONT_BES
 	addmem 	    M_L_SUB, M_R_SUB, M_C_SUB, M_LS_SUB, M_RS_SUB   # these values are computed later by other cores
-    savexmem    M_SUB                       # total of subwoofer for LCR+SUR LR
+#-===== LFE : section PureAES 
     section PureAES                         # pureAES in first to optimize testing time in PureAES mode
+        memsave    M_SUB                   # total of subwoofer for LCR+SUR LR
     	transfer (8,24) (9,25) (10,26) (11,27) (12,28) (13,29)	#feedback to xmos for loopback to 16..21
-    section PureUSB
+#-===== LFE : sectionelse 
+    sectionelse
         addmem      M_Ltm_SUB, M_Rtm_SUB
-    	transfer ( Lin, REW_LOOPBACK )  (Lin, Cin)    #( Lin, Rin) #(Lin, Cin) # used during test, to send the Lef signal every where else
+        memsave    M_SUB                   # total of subwoofer for LCR+SUR LR + SURtm LR
+    	transfer ( Lin, REW_LOOPBACK )  #(Lin, Cin) # used during test, to send the Lef signal every where else
     section
-#	biquad 		F_SUB			            # eventually apply specific biquad filtering for sub
+	biquad 		F_SUB			            # eventually apply specific biquad filtering for sub
 	delayus		DEL_SUB
 	output 		DAC_SUB , REW_SUB
 #	outputvolsat DAC_SUB
 
-    #this is to demonstrate that the sum of all signals is OKAY on 5.1 !
-#    mixermem M_SUB, M_L, M_R, M_C, M_LS, M_RS
-#    output REW_SUM
-	input 		Cin 			# get center channel 
-    section     core_enabled_when_centre_to_front
-	biquad 		F_CENTRE_SUB    # extract low freq only.
-    outputgain  ( C_SUB, 0.5 )
-    section     core_enabled_when_centre_to_sub
-    delayus     DEL_FRONT_LV4 - DEL_CENTRE_LV4
+
+#-# CORE 4 : in charge of centre
+core PureUSB_or_PureAES
+    memclr      M_C_TEMP        # used only when centre low freq are routed to front
+	mixer 		Cin,Lin 			# get center channel 
+    delayus     DEL_FRONT_BES - DEL_CENTRE_BES
     copyxy
 	biquad 		F_CENTRE_SUB    # extract low freq only.
-    savexmem    M_C_SUB         # save low freq
-    section     # no parameter = end of selector
+    memsave     M_C_SUB         # save low freq
     swapxy                      # retreive centre channel 
-    delayus     DEL_CENTRE_LV4  # after this delay, total delay = DEL_FRONT_LV4
+    delayus     DEL_CENTRE_BES  # after this delay, total delay = DEL_FRONT_BES
     subxy                       # compute high pass
-    savexmem    M_C             # save high freq of centre channel for futur sumation
-#    biquad      F_CENTRE_EQ     # equalize eventually with some PEQs 
+    memsave     M_C             # save high freq of centre channel for futur sumation
+    biquad      F_CENTRE_EQ     # equalize eventually with some PEQs 
     delayus     DEL_C           # distance correction
     output      DAC_C , REW_CENTRE
 #	outputvolsat DAC_C 			# alternative output when ready for "production"
 
-    mixer DAC_C,DAC_L,DAC_R,DAC_SUB
-    output REW_SUM
 
-## CORE 4 : in charge of Ltm , this one ONLY activated in pureUSB
+## management of the Surround speakers in Pure USB
+
+#-# CORE 5 : in charge of LS and Ltm , this one ONLY activated in pureUSB
 core PureUSB		
 
-	input 		LSin
-    delayus     DEL_FRONT_LV4 - DEL_SUR_LV4
+	mixer 		LSin, Lin
+    delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
     savexmem    M_LS_SUB        # save low freq
     swapxy
-    delayus     DEL_SUR_LV4
+    delayus     DEL_SUR_BES
     subxy                       # compute 2nd order high pass
-#    biquad      F_SUR_EQ        # equalize eventually with some PEQs 
+    biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     savexmem    M_LS
 	delayus		DEL_LS          # distance allignement
 	output 		DAC_LS 
 #	outputvolsat DAC_LS
 
 	input 		Ltmin
-    delayus     DEL_FRONT_LV4 - DEL_SURtm_LV4 
+    delayus     DEL_FRONT_BES - DEL_SURtm_BES 
     copyxy
 	biquad		F_SURtm_SUB
     savexmem    M_Ltm_SUB     # save low freq
     swapxy
-    delayus     DEL_SURtm_LV4
+    delayus     DEL_SURtm_BES
     subxy                       # compute 2nd order high pass
-#    biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
+    section PureUSB,not192k
+    biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
+    section
 	delayus		DEL_Ltm         # distance allignement
-	output 		DAC_Ltm , REW_SURtm
+	output 		DAC_Ltm
 #	outputvolsat DAC_Ltm
 
-## CORE 5 : in charge of Ltm , this one ONLY activated in pureUSB
+#-# CORE 6 : in charge of RS and Rtm , this one ONLY activated in pureUSB
 core PureUSB
 
-	input 		RSin
-    delayus     DEL_FRONT_LV4 - DEL_SUR_LV4
+	mixer 		RSin,Rin
+    delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
-    savexmem    M_RS_SUB        # save low freq    swapxy
-    delayus     DEL_SUR_LV4
+    savexmem    M_RS_SUB        # save low freq    
+    swapxy
+    delayus     DEL_SUR_BES
     subxy                       # compute high pass
     biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     savexmem    M_RS
 	delayus		DEL_RS          # distance allignement
 	output 		DAC_RS , REW_SUR
-#	outputvolsat DAC_RS
+#	outputvolsat DAC_RS , REW_SUR
 
 	input 		Rtmin
-    delayus     DEL_FRONT_LV4 - DEL_SURtm_LV4 
+    delayus     DEL_FRONT_BES - DEL_SURtm_BES 
     copyxy
 	biquad		F_SURtm_SUB
     savexmem    M_Rtm_SUB
     swapxy
-    delayus     DEL_SURtm_LV4
+    delayus     DEL_SURtm_BES
     subxy                       # compute high pass
-#    biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
+    section PureUSB,not192k
+    biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
+    section
 	delayus		DEL_Rtm         # distance allignement
-	output 		DAC_Rtm 
-#	outputvolsat DAC_Rtm
+	output 		DAC_Rtm , REW_SURtm 
+#	outputvolsat DAC_Rtm , REW_SURtm 
 
 #-#### DELAYS PRE-FILTERING to allign phases
-#-#### Delay Front Speakers LV4 = [DEL_FRONT_LV4]us
-#-#### Delay Centre speaker LV4 = [DEL_CENTRE_LV4]us
-#-#### Delay Surround speakers LV4 = [DEL_SUR_LV4]us
-#-#### Delay Surround Head Speakers LV4 = [DEL_SURtm_LV4]us
+#-#### Delay Front Speakers LV4 = [DEL_FRONT_BES]us
+#-#### Delay Centre speaker LV4 = [DEL_CENTRE_BES]us
+#-#### Delay Surround speakers LV4 = [DEL_SUR_BES]us
+#-#### Delay Surround Head Speakers LV4 = [DEL_SURtm_BES]us
 
 end
+
+
+## CORE 4 : in charge of centre
+core  core_enabled_when_centre_to_front  	
+
+    input 		Cin 			# get center channel 
+    copyxy
+    biquad      F_FRONT_SUB
+    savexmem    M_C_SUB         # save very low freq
+    swapxy
+    delayus     DEL_FRONT_BES
+    subxy                       # compute high pass at same crossover point as front
+    savexmem    M_C_TEMP
+
+    input 		Cin 			# get center channel 
+    delayus     DEL_FRONT_BES - DEL_CENTRE_BES
+    copyxy
+	biquad 		F_CENTRE_SUB    # extract low freq only.
+    memsub      M_C_TEMP        # M_C_TEMP <= M_C_TEMP - lowfreq (possible because delays are alligned)
+    swapxy                      # retreive delayed centre channel 
+    delayus     DEL_CENTRE_BES  # after this delay, total delay = DEL_FRONT_BES
+    subxy                       # compute full high pass
+    savexmem    M_C             # save high freq of centre channel for futur sumation
+#    biquad      F_CENTRE_EQ     # equalize eventually with some PEQs 
+    delayus     DEL_C           # distance correction
+    output      DAC_C , REW_CENTRE
+#	outputvolsat DAC_C 			# alternative output when ready for "production"
+
