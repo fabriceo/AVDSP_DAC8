@@ -9,6 +9,9 @@ DSPMANT  28,56              # recomended precision
 DSPCLOCK 560,496,528,0      # cpu frequence tuning
 DSPFSMIN 44100
 DSPFSMAX 192000
+DSPXS2                      # provide instruction estimate
+DSPCOND 0                   # condition provided for testing core and sections during instruction estimate
+DSPPRINTF 0
 
 # program features, can be enabled by user
 
@@ -92,6 +95,8 @@ F_CENTRE_SUB	    LPBE4( Fc_CENTRE * cbe4 )
 F_CENTRE_SUB_DIV2	LPBE4( Fc_CENTRE * cbe4, 0.5 )  # same with - 6db
 F_SUR_SUB		    LPBE4( Fc_SUR * cbe4 )
 F_SURtm_SUB		    LPBE4( Fc_SURtm * cbe4 )
+
+DSPPRINTF 2
 
 # formula below should not be changed. This is the equivalent delay for the bessel 4 filters at respective fc
 DEL_FRONT_BES     = dbe4 / Fc_FRONT / cbe4
