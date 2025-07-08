@@ -1,0 +1,83 @@
+# lx mini with sub woofer and headphones
+DSPXS2
+# this can be changed by user
+DAC_HEAD_L      0
+DAC_HEAD_R      1
+DAC_WOOFER_L    2
+DAC_MID_L       3
+DAC_SUB_L       4
+DAC_WOOFER_R    5
+DAC_MID_R       6
+DAC_SUB_R       7
+
+# boost at 50hz for the LXMini woofer without subwoofer
+eqwoofer    7db     # put 0db for the version with subwoofer
+# crossover frequency between woofer and subwoofer 
+fcsub       10      # put 60 for the version  with subwoofer, otherwise 10 is suggested as a DC blocker and LF protection
+
+gainwoofer -7db     # gain reduction on the woofer to harmonize mid and woofer.
+gainmid    -17db    # gain reduction on the mid to accomodate biquad excess gains.
+
+left    16
+right   17
+
+rew1    24 ; rew2 25 ; rew3 26 ; rew4 27 ; rew5 28 ; rew6 29 ; rew7 30 ; rew8 31
+
+eqin	PEAK(1800,7,2db)
+eqlo	HP2(fcsub, 0.5) LP2(700,0.5) PEAK(50,0.5,eqwoofer)  PEAK(5100,8,-16db) PEAK(5800,3,-10db)
+eqhi	HP2(700,0.5) LS2(1000,0.5,16db) PEAK(2600,2,-4db) HS2(8000,0.7,8.5db) \
+			PEAK(10000,5,2.3db) PEAK(13100,7,-5db) PEAK(15800,10,7db)
+
+# possibility to add peaks corrections if needed to compensate room modes
+lpsub   LP2(fcsub,0.5)
+
+# possibility to tweak your own response curve for the headphones
+eqhead  PEAK(500,1,0db) PEAK(1000,1,0db) PEAK(2000,1,0db) HS2(10000, 0.7, 0db)
+
+core
+	inputgain (left,gainwoofer)	#reduction by -7db to compensate peak at 50hz
+	biquad  eqin
+	biquad  eqlo
+	output  DAC_WOOFER_L, rew3
+
+	inputgain (left,gainmid) #reduction by -17db to compensate Lowshelf +16db and some others
+	biquad eqin
+	biquad eqhi
+	output DAC_MID_L
+
+core
+	inputgain (right,gainwoofer)	#reduction by -7db to compensate peak at 50hz
+	biquad  eqin
+	biquad  eqlo
+	output  DAC_WOOFER_R
+
+	inputgain (right,gainmid) #reduction by -17db to compensate Lowshelf +16db and some others
+	biquad eqin
+	biquad eqhi
+	output DAC_MID_R, rew4
+
+
+core
+
+    input   left
+    biquad  eqhead
+    output  DAC_HEAD_L
+
+    input   right
+    biquad  eqhead
+    output  DAC_HEAD_R, rew2
+
+    input   left
+    biquad  lpsub
+    output  DAC_SUB_L, rew5
+
+    input   right
+    biquad  lpsub
+    output  DAC_SUB_R
+
+core 3
+	transfer ( left , rew1 )	    #loopback for reference in REW
+core 8
+    transfer ( 8, 24 ) ( 9 , 25 )   # transfer aes stereo to xmos internal chaneels
+
+end
