@@ -5,13 +5,12 @@
 ## the LFE channel is increased by 10db
 ## possibility to choose if the center channel low freq is sent to FRONT, or to SUB directly
 
-DSPMANT  28,56              # recomended precision
-DSPCLOCK 560,496,528,0      # cpu frequence tuning
-DSPFSMIN 44100
-DSPFSMAX 192000
-DSPXS2                      # provide instruction estimate
-DSPCOND 0                   # condition provided for testing core and sections during instruction estimate
-DSPPRINTF 0
+DSPMANT     28,56           # recomended precision
+DSPCLOCK    560,496,528,0   # cpu frequence tuning
+DSPFSMIN    44100
+DSPFSMAX    192000
+DSPXS2      0               # provide instruction estimate
+DSPPRINTF   1
 
 # program features, can be enabled by user
 

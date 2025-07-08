@@ -1,63 +1,93 @@
 # lx mini with sub woofer and headphones
-DSPXS2
-# this can be changed by user
-DAC_HEAD_L      0
+
+# it is suggested to keep the 2 first DAC for headphone
+DAC_HEAD_L      0		
 DAC_HEAD_R      1
+
+# the output value (2..7) can be changed freely by user according to amplifier wiring
 DAC_WOOFER_L    2
 DAC_MID_L       3
-DAC_SUB_L       4
+DAC_SUB_L       4	# Left or combine subwoofer output
 DAC_WOOFER_R    5
 DAC_MID_R       6
-DAC_SUB_R       7
+DAC_SUB_R       7	# this second subwoofer output is optional. See code later below
 
-# boost at 50hz for the LXMini woofer without subwoofer
-eqwoofer    7db     # put 0db for the version with subwoofer
-# crossover frequency between woofer and subwoofer 
-fcsub       10      # put 60 for the version  with subwoofer, otherwise 10 is suggested as a DC blocker and LF protection
+# boost at 50hz for the LXMini woofer with or without subwoofer. Choose one of the 2 line below
+#eqwoofer    0db     # put 0db for the version with subwoofer 
+eqwoofer    7db     # put 7db to create a peak at 50hz if NO subwoofer connected
 
-gainwoofer -7db     # gain reduction on the woofer to harmonize mid and woofer.
-gainmid    -17db    # gain reduction on the mid to accomodate biquad excess gains.
+# crossover frequency between woofer and subwoofer. Choose one of the 2 line below 
+#fcsub       60      # Put the crossover frequency here for the version  WITH subwoofer
+fcsub       10      # otherwise 10 is suggested as a DC blocker and LF protection
 
-left    16
-right   17
 
-rew1    24 ; rew2 25 ; rew3 26 ; rew4 27 ; rew5 28 ; rew6 29 ; rew7 30 ; rew8 31
+# possibility to tweak your own response curve for the headphone output. Default value below are flat
+eqhead  PEAK(500,1,0db) PEAK(1000,1,0db) PEAK(2000,1,0db) HS2(10000, 0.7, 0db)
 
+
+# this is the official values to produce the LXMini response. Should not touch this unless you know what you do
 eqin	PEAK(1800,7,2db)
 eqlo	HP2(fcsub, 0.5) LP2(700,0.5) PEAK(50,0.5,eqwoofer)  PEAK(5100,8,-16db) PEAK(5800,3,-10db)
 eqhi	HP2(700,0.5) LS2(1000,0.5,16db) PEAK(2600,2,-4db) HS2(8000,0.7,8.5db) \
 			PEAK(10000,5,2.3db) PEAK(13100,7,-5db) PEAK(15800,10,7db)
 
-# possibility to add peaks corrections if needed to compensate room modes
-lpsub   LP2(fcsub,0.5)
+# possibility to add some peaks corrections after the LR2 filter, to compensate room modes
+lpsub   LP2(fcsub,0.5) # PEAK(40,4,0db) PEAK(50,4,0db) PEAK(60,4,0db) 
 
-# possibility to tweak your own response curve for the headphones
-eqhead  PEAK(500,1,0db) PEAK(1000,1,0db) PEAK(2000,1,0db) HS2(10000, 0.7, 0db)
 
+# should not touch any value below
+gainwoofer -7db     # gain reduction on the woofer to harmonize mid and woofer.
+gainmid    -17db    # gain reduction on the mid to accomodate biquad excess gains.
+
+# dsp memory references according to dac8pro channels mapping. do not change
+left    16
+right   17
+
+# used to send feedbacks to REW software
+rew1 24 ; rew2 25 ; rew3 26 ; rew4 27 ; rew5 28 ; rew6 29 ; rew7 30 ; rew8 31
+
+
+#this core is in charge of left channel, both woofer and medium
+# 460 instructions required at 192khz
 core
-	inputgain (left,gainwoofer)	#reduction by -7db to compensate peak at 50hz
+	inputgain (left,gainwoofer)		#reduction by -7db to compensate peak at 50hz
 	biquad  eqin
 	biquad  eqlo
-	output  DAC_WOOFER_L, rew3
+	output  DAC_WOOFER_L, rew3		# low response is also sent to the usb host for REWon channel 3
+#   outputvolsat  DAC_WOOFER_L		# can be used instead of above line, when "voldsp" is activated in front panel menu
 
-	inputgain (left,gainmid) #reduction by -17db to compensate Lowshelf +16db and some others
+	inputgain (left,gainmid) 		#reduction by -17db to compensate Lowshelf (+16db) and some others
 	biquad eqin
 	biquad eqhi
 	output DAC_MID_L
+#   outputvolsat  DAC_MID_L			# can be used instead of above line, when "voldsp" is activated in front panel menu
 
+
+#this core is in charge of right channel, both woofer and medium
+# 450 instructions required at 192khz
 core
-	inputgain (right,gainwoofer)	#reduction by -7db to compensate peak at 50hz
+	inputgain (right,gainwoofer)	# reduction by -7db to compensate peak at 50hz
 	biquad  eqin
 	biquad  eqlo
 	output  DAC_WOOFER_R
+#   outputvolsat  DAC_WOOFER_R		# can be used instead of above line, when "voldsp" is activated in front panel menu
 
-	inputgain (right,gainmid) #reduction by -17db to compensate Lowshelf +16db and some others
+	inputgain (right,gainmid) 		#reduction by -17db to compensate Lowshelf (+16db) and some others
 	biquad eqin
 	biquad eqhi
-	output DAC_MID_R, rew4
+	output DAC_MID_R, rew4			# mid response is also sent to the usb host for REWon channel 4
+#   outputvolsat  DAC_MID_R	# can be used instead of above line, when "voldsp" is activated in front panel menu
 
 
+# this core is used to equalize headphones
+# 335 instructions required at 192khz
 core
+
+	section 3	# line below activated only in PureUSB mode
+		transfer ( left , rew1 )	    # loopback for reference in REW
+	section 8	# line below activated only in PureAES mode
+    	transfer ( 8, 24 ) ( 9 , 25 )   # transfer aes stereo to xmos internal chanels (mandatory)
+	section
 
     input   left
     biquad  eqhead
@@ -65,19 +95,57 @@ core
 
     input   right
     biquad  eqhead
-    output  DAC_HEAD_R, rew2
+    output  DAC_HEAD_R, rew2		# headphone EQ is also sent to the usb host for REW on channel 2
 
-    input   left
+
+# this core is used to produce subwoofer lowpass
+# 180 instructions required at 192khz
+core
+# this program provide 2 different subwoofer channels. 
+    inputgain (left,gainwoofer)
+# the option below (mixer) can be chosen instead of above inputgain, to produce a SINGLE combined subwoofer 
+#	mixer (left,gainwoofer) (right,gainwoofer)
     biquad  lpsub
-    output  DAC_SUB_L, rew5
+    output  DAC_SUB_L, rew5			# subwoofer response is also sent to the usb host for REW on channel 5
+#   outputvolsat  DAC_SUB_L	# can be used instead of above line, when "voldsp" is activated in front panel menu
 
-    input   right
+#this is for the second subwoofer, but could be removed if above option for single suwoofer is used.
+    inputgain (right,gainwoofer)
     biquad  lpsub
     output  DAC_SUB_R
+#   outputvolsat  DAC_SUB_R	# can be used instead of above line, when "voldsp" is activated in front panel menu
 
-core 3
-	transfer ( left , rew1 )	    #loopback for reference in REW
-core 8
-    transfer ( 8, 24 ) ( 9 , 25 )   # transfer aes stereo to xmos internal chaneels
 
-end
+end # everything after "end" is ignored
+
+# to compile this program:
+dspcreate -dspformat 2 -dsptext lxmini_sub2.avdsp -binfile prog1.bin
+
+#to upload this program into the DAC8PRO, after configuration of "Filter / DSP Prog 1"
+xmosusb --dspload prog1.bin
+
+#to see the cores status, load and verify that the program is loaded:
+xmosusb --dacstatus
+
+which will give something like that (for v1.61):
+
+	decimation factor   = 1
+	maximum DSP tasks   = 7
+	DSP program number  = 1
+	DSP Core 1: load    = 458
+	DSP Core 2: load    = 449
+	DSP Core 3: load    = 335
+	DSP Core 4: load    = 219
+	DSP Core 5: load    = 0
+	DSP Core 6: load    = 0
+	DSP Core 7: load    = 0
+	DSP max load        = 458 / 549 = 83%fs
+	DSP mem available   = 36854 words
+
+this gives a total load of 458+449+335+219 = 1461, compared to maximum 2300 => 63% at 192khz
+
+# to write a bin file in the xmos fash memory X with X = 1, 2 or 3 or 4, after --dspload :
+xmosusb --dspwrite X
+
+# to erase all dsp program in flash memory:
+xmosusb --flasherase 1
