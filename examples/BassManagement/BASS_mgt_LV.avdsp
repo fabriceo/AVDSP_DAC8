@@ -96,7 +96,7 @@ F_CENTRE_SUB_DIV2	LPBE4( Fc_CENTRE * cbe4, 0.5 )  # same with - 6db
 F_SUR_SUB		    LPBE4( Fc_SUR * cbe4 )
 F_SURtm_SUB		    LPBE4( Fc_SURtm * cbe4 )
 
-DSPPRINTF 2
+DSPPRINTF 4
 
 # formula below should not be changed. This is the equivalent delay for the bessel 4 filters at respective fc
 DEL_FRONT_BES     = dbe4 / Fc_FRONT / cbe4
@@ -228,7 +228,7 @@ if (WITH_DEL)    delayus      DEL_LS
 if (VOL_SAT,0,1) output       DAC_LS
 if (VOL_SAT,1,0) outputvolsat DAC_LS
 
-
+DSPPRINTF 1
 #-# CORE 2 : in charge of Right
 core PureUSB_or_PureAES
 
