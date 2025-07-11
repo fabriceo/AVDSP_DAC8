@@ -5,26 +5,34 @@
 ## the LFE channel is increased by 10db
 ## possibility to choose if the center channel low freq is sent to FRONT, or to SUB directly
 
-DSPXS2      0               # inform compiler that we run on XCORE XS200 target, with initial condition "0"
+DSPXS2      3               # inform compiler that we run on XCORE XS200 target, with initial condition "3" (pureUSB)
 DSPMANT     28,56           # recomended precision
 DSPCLOCK    560,496,528,0   # cpu frequence tuning
 DSPFSMIN    44100 
 DSPFSMAX    192000
-DSPPRINTF   1               # minimize verbose           
+DSPPRINTF   1               # minimize verbose printing
 
-# program features, can be enabled by user
+# constants definition to select which channel will be treated to go trough subwoofer
+sL 1 ; sR 2 ; sC 4 ; sLS 8 ; sRS 16 ; sLtm 32 ; sRtm 64 ; sALL 127 ; sCENTER_TO_FRONT 128
 
-TEST_REW        = 1         # 1 to send dac outputs to REW (only possible in PureUSB mode)
-TEST_SUM        = 0         # 1 to combine all signals together and produce a sum of all channels to REW_SUM
+# program features, can be enabled/toggled by user
 
-VOL_SAT         = 1         # 1 to enable DSP program managing saturation and volume reduction accordingly
+TEST_REW        = sL+sR+sC        # send outputs to REW (for measurement) instead of DACs and activate given channels
+
+# define which channel must be routed to SUB woofer and if CENTER residual LF should go to Front
+# as an example, if front are "large" then remove "sL + sR" from equation below
+MODE_SUB        = 0 #sL #+ sR #+ sC + sLS + sRS + sLtm + sRtm # + sCENTER_TO_FRONT
+# definition of the final gain applied on the SUB (as it will sum all lowfreq channels)
+gain_SUB        = 1
+
+VOL_SAT         = 0         # 1 to enable DSP program managing saturation and volume reduction accordingly
 WITH_EQ_F       = 1         # 1 to enable user specific filters on front
 WITH_EQ_C       = 1         # 1 to enable user specific filters on center
 WITH_EQ_S       = 1         # 1 to enable user specific filters on surround
 WITH_EQ_Stm     = 1         # 1 to enable user specific filters on surrounf head
 WITH_EQ_SUB     = 1         # 1 to enable user specific filters on sub
 WITH_DEL        = 1         # 1 to enable distance alignement
-CENTER_TO_FRONT = 1         # 1 to send the residual bass (not going to sub) to the FRONT speaker (half on each)
+
 
 ## DAC output assignement , can be changed by user
 
@@ -36,10 +44,6 @@ DAC_LS			4
 DAC_RS			5
 DAC_Ltm			6	#overhead speakers for dolby atmos
 DAC_Rtm			7
-#-DAC outputs : L=[DAC_L], R=[DAC_R], C=[DAC_C], SUB=[DAC_SUB], LS=[DAC_LS], RS=[DAC_RS], Ltm=[DAC_Ltm], Rtm=[DAC_Rtm]
-
-# definition of the final gain applied on the SUB (as it will sum all lowfreq channels)
-gain_SUB        = 1
 
 ## key frequencies for individual crossover, can be changed by user freely
 
@@ -55,21 +59,36 @@ Fc_SUB			1000	# optional low pass cut off frequency for subwoofer (typically 200
 # a simple LT is done to push the cutoff few hertz left, to avoid saturation in bass (closed box)
 #F_FRONT_HP		LT(36,0.75,45,0.75) 	# this also requires a delay value of 3000 in PH_FRONT
 
-if (WITH_EQ_F) F_FRONT_EQ	PEAK(400,1,0db)	PEAK(800,1,0db)	PEAK(1600,1,0db) PEAK(1600,1,0db) PEAK(1600,1,0db) HS2(8000,1,0db)	# optional EQ for 44..96k
+if (WITH_EQ_F) 
 #- front speaker equalization
-
-if (WITH_EQ_C) F_CENTRE_EQ	PEAK( 1000,1,0db ) PEAK( 2000,1,0db )  PEAK( 2000,1,0db )  HS2(8000,1,0db)		# optional EQ for 44..96k
+F_FRONT_EQ  PEAK(400,1,0db)	PEAK(800,1,0db)	PEAK(1600,1,0db) PEAK(1600,1,0db) PEAK(1600,1,0db) HS2(8000,1,0db)	# optional EQ for 44..96k
+else
+#- no front speaker equalization
+endif
+if (WITH_EQ_C)
 #- center speaker filter bank
-
-if (WITH_EQ_S) F_SUR_EQ		PEAK( 1000,1,0db ) PEAK( 2000,1,0db ) PEAK( 3000,1,0db )  #HS2(8000,1,0db)		# optional EQ for 44..96k
+F_CENTRE_EQ PEAK( 1000,1,0db ) PEAK( 2000,1,0db )  PEAK( 2000,1,0db )  HS2(8000,1,0db)		# optional EQ for 44..96k
+else
+#- no centre speaker equalization
+endif
+if (WITH_EQ_S) 
 #- surround speakers filter
-
-if (WITH_EQ_Stm) F_SURtm_EQ	PEAK( 1000,1,0db ) #PEAK( 2000,1,0db ) # HS2(8000,1,0db)	
+F_SUR_EQ	PEAK( 1000,1,0db ) PEAK( 2000,1,0db ) PEAK( 3000,1,0db )  #HS2(8000,1,0db)		# optional EQ for 44..96k
+else
+#- no surround speaker equalization
+endif
+if (WITH_EQ_Stm)
 #- overhead surround (only in pureUSB))
-
-if (WITH_EQ_SUB) F_SUB_EQ	PEAK( 80,1,0db ) PEAK( 80,1,0db ) #LPBE2( Fc_SUB )
+F_SURtm_EQ	PEAK( 1000,1,0db ) #PEAK( 2000,1,0db ) # HS2(8000,1,0db)	
+else
+#- no overhead surround equalization
+endif
+if (WITH_EQ_SUB)
 #- optional subwoofer EQ and low pass eventually
-if  #end of if section
+F_SUB_EQ	PEAK( 80,1,0db ) PEAK( 80,1,0db ) #LPBE2( Fc_SUB )
+else
+#- no subwoofer equalization
+endif
 
 ## bank of delays given in microseconds to correct speaker distance at listening point
 ## each value should be computed based on 343m/seconds and the value should be relative to the farest speaker.
@@ -86,17 +105,22 @@ DEL_RS		=	100 # 2000
 DEL_Ltm		=	100 #  500
 DEL_Rtm		=	100 #    0
 
+
+# sanity check of user choices because a prealignement is done with the front speakers
+if (Fc_CENTRE - Fc_FRONT,65536) ERROR # Fc_CENTRE must be higher or equal to Fc_FRONT
+if (Fc_SUR    - Fc_FRONT,65536) ERROR # Fc_SUR must be higher or equal to Fc_FRONT
+if (Fc_SURtm  - Fc_FRONT,65536) ERROR # Fc_SURtm must be higher or equal to Fc_FRONT
+
 #-BESSEL filters order 4 definition
 cbe4    1.114   # magic coefficient to shift crossover point for LV4 filters
 dbe4    510000  # magic numerator to get bessel4 group delay with formula gdbe4 = dbe4 / ( fc * cbe4 )
 
-F_FRONT_SUB		    LPBE4( Fc_FRONT * cbe4 )
-F_CENTRE_SUB	    LPBE4( Fc_CENTRE * cbe4 )
-F_CENTRE_SUB_DIV2	LPBE4( Fc_CENTRE * cbe4, 0.5 )  # same with - 6db
-F_SUR_SUB		    LPBE4( Fc_SUR * cbe4 )
-F_SURtm_SUB		    LPBE4( Fc_SURtm * cbe4 )
+if (MODE_SUB,sL+sR)                   F_FRONT_SUB		LPBE4( Fc_FRONT * cbe4 )
+if (MODE_SUB,sC+sCENTER_TO_FRONT )    F_CENTRE_SUB	    LPBE4( Fc_CENTRE * cbe4 )
+if (MODE_SUB,sLS+sRS)                 F_SUR_SUB		    LPBE4( Fc_SUR * cbe4 )
+if (MODE_SUB,sLtm+sRtm)               F_SURtm_SUB		LPBE4( Fc_SURtm * cbe4 )
 
-DSPPRINTF 4     # re-enable full (debugging) verbose
+DSPPRINTF 2 
 
 # formula below should not be changed. This is the equivalent delay for the bessel 4 filters at respective fc
 DEL_FRONT_BES     = dbe4 / Fc_FRONT / cbe4
@@ -104,6 +128,11 @@ DEL_CENTRE_BES    = dbe4 / Fc_CENTRE / cbe4
 DEL_SUR_BES       = dbe4 / Fc_SUR / cbe4
 DEL_SURtm_BES     = dbe4 / Fc_SURtm / cbe4
 
+#-DELAYS PRE-FILTERING to align phases
+#-Front Speakers LV4    = [DEL_FRONT_BES]us
+#-Centre speaker LV4    = [DEL_CENTRE_BES]us
+#-Surround speakers LV4 = [DEL_SUR_BES]us
+#-Surround Head LV4     = [DEL_SURtm_BES]us
 
 ## USB inputs definition. Same for AES due to internal loopback in xmos when in PureAES mode
 
@@ -116,44 +145,35 @@ RSin			? 21
 Ltmin			? 22	#not used in case of AES inputs 
 Rtmin			? 23	#not used in case of AES inputs 
 
-if (TEST_SUM)
-#-#### MODE TEST_SUM ACTIVATED, all inputs receive Left from Host and no distance alignement and no Equalization filters and no VOL_SAT ####
-TEST_REW        ?=1
-Cin?=Lin ; LSin?=Lin ; RSin?=Rin ; Ltmin?=Lin ; Rtmin?=Rin
-gain_SUM        = 1/7
-gain_SUB        ?= 1/7
+# forcing inputs from first channel (16) only when we are in TEST_REW mode
+if (TEST_REW,sL)        Lin   ?= 16
+if (TEST_REW,sR)        Rin   ?= 16
+if (TEST_REW,sC)        Cin   ?= 16
+if (TEST_REW,sLS)       LSin  ?= 16
+if (TEST_REW,sRS)       LSin  ?= 16
+if (TEST_REW,sLtm)      Ltmin ?= 16
+if (TEST_REW,sRtm)      Rtmin ?= 16
+# display resulting input mapping
+#-Inputs Lin [Lin], Rin [Rin], Cin [Cin], LSin [LSin], RSin [RSin], Ltmin [Ltmin], Rtmin [Rtmin], LFEin [LFEin]
+if (TEST_REW)
+#-
+#-#### MODE TEST ACTIVATED ####
+#-no distance alignement
 WITH_DEL        ?= 0
+#-no Equalization filters
 WITH_EQ_F ?= 0 ; WITH_EQ_C ?= 0 ; WITH_EQ_S ?= 0 ; WITH_EQ_Stm ?= 0 ; WITH_EQ_SUB ?= 0
 VOL_SAT          ?= 0
-if
-
-C_SUB			31	#special usage of an output location for handling the value of the centre low freq
-
-#-Inputs Lin [Lin], Rin [Rin], Cin [Cin], LSin [LSin], RSin [RSin], Ltmin [Ltmin], Rtmin [Rtmin], LFEin [LFEin]
-
-## special outputs definition to USB host only for TEST mode
-if (TEST_REW)
+#-no VOL_SAT ([VOL_SAT])
+## special outputs definition to USB host only used when TEST_REW is activated
 REW1		24	; REW_LOOPBACK = REW1	    # correspond to input channel 1 in REW menus, as a straight loopback reference
-REW2		25	; DAC_R       ?= REW2	    # response of FRONT
+REW2		25	; DAC_L       ?= REW2	    # response of FRONT
 REW3		26	; DAC_C       ?= REW3	    # response of centre		    
-REW4		27	; DAC_RS      ?= REW4       # SUR response                
-REW5		28	; DAC_Rtm     ?= REW5       # SURtm response
+REW4		27	; DAC_LS      ?= REW4       # SUR response                
+REW5		28	; DAC_Ltm     ?= REW5       # SURtm response
 REW6		29	; DAC_SUB     ?= REW6		# total SUB response including LFE
 REW7		30	; REW_SUM      = REW7       # used to show the electrical sum of all selected channels
 REW8		31	; 
-if
-
-
-# intermediate memory location to hold part of signals
-M_L_SUB	        MEMORY 1    # low freq part of the left channel
-M_R_SUB	        MEMORY 1
-M_C_SUB	        MEMORY 1
-M_C_TEMP        MEMORY 1
-M_LS_SUB	    MEMORY 1
-M_RS_SUB	    MEMORY 1
-M_Ltm_SUB       MEMORY 1
-M_Rtm_SUB       MEMORY 1
-
+DAC_R ?= REW8 ; DAC_RS ?= REW8; DAC_Rtm ?= REW8   # other DAC outputs sent to dummy adress to avoid sending to DAC
 M_L	            MEMORY 1    # high freq part of the left channel
 M_R	            MEMORY 1
 M_C	            MEMORY 1
@@ -162,6 +182,19 @@ M_RS	        MEMORY 1
 M_Ltm           MEMORY 1
 M_Rtm           MEMORY 1
 M_SUB	        MEMORY 1    # resulting sub channel including LFE
+endif
+#-
+#-DAC outputs : L=[DAC_L], R=[DAC_R], C=[DAC_C], SUB=[DAC_SUB], LS=[DAC_LS], RS=[DAC_RS], Ltm=[DAC_Ltm], Rtm=[DAC_Rtm]
+
+# intermediate memory location to hold part of signals (only declared if used)
+if (MODE_SUB,sL)  M_L_SUB    MEMORY 1    # low freq part of the left channel
+if (MODE_SUB,sR)  M_R_SUB    MEMORY 1
+if (MODE_SUB,sC+sCENTER_TO_FRONT)  M_C_SUB	MEMORY 1
+if (MODE_SUB,sC+sCENTER_TO_FRONT)  M_C_TEMP MEMORY 1
+if (MODE_SUB,sLS) M_LS_SUB   MEMORY 1
+if (MODE_SUB,sRS) M_RS_SUB   MEMORY 1
+if (MODE_SUB,sLtm) M_Ltm_SUB MEMORY 1
+if (MODE_SUB,sLtm) M_Rtm_SUB MEMORY 1
 
 PureUSB		3	    # pattern to enable a core only when in PureUSB mode
 USB_AES     4
@@ -180,35 +213,42 @@ onlyAES1    b11100000
 ####                                                         ####        
 #################################################################
 
-coreaes PureAES,onlyAES1      # this statement is used to launch the first spdif decoding core (on AES2)  
-coreaes PureAES,onlyAES1      # this statement is used to launch the second spdif decoding core (on AES3) 
-                              # AES4 can be used as a stereo channel, selecting PureAES4 on the display
-core USB_AES
-    # all signals passthrough, no any treatment !!!
-    transfer8   8,24
-    transfer8   16,0
-
-#-# CORE 1 : in charge of Left
 core PureUSB_or_PureAES
-
+#-
+#-#### CORE 1 : in charge of Left
+if (TEST_REW,sALL,sL)
+    clrxy
+else
 	input 		 Lin
+endif
+if (MODE_SUB,sL)
+#-Left channel sub extraction
     copyxy
     biquad       F_FRONT_SUB
-    memsave      M_L_SUB            # save low freq of the front left signal
+    memsave      M_L_SUB       # save low freq of the front left signal
     swapxy
+endif
     delayus      DEL_FRONT_BES
-    subxy                           # compute front high pass (substractive filter)
-if (TEST_SUM)    memsave      M_L
-if (CENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
+if (MODE_SUB,sL) subxy                      # compute front high pass (substractive filter)
+
+if (TEST_REW,sL) memsave      M_L
+
+if (MODE_SUB,sCENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
 if (WITH_EQ_F)	 biquad 	  F_FRONT_EQ	# eventually filtering Front Left (EQ)
 if (WITH_DEL)	 delayus	  DEL_L			# adjusting delay for distance
-if (VOL_SAT,0,1) output 	  DAC_L
-if (VOL_SAT,1,0) outputvolsat DAC_L
+if (1-VOL_SAT)   output 	  DAC_L
+if (VOL_SAT)     outputvolsat DAC_L
 
 #-== Left Surround : section PureAES,not192k
     section PureAES,not192k     # LS is managed here in PureAES only and only for 44..96k
 
+if (TEST_REW,sALL,sLS)
+    clrxy
+else
     input 		 LSin
+endif
+if (MODE_SUB,sLS)
+#-Surround left channel sub extraction
     delayus      DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		 F_SUR_SUB
@@ -216,106 +256,153 @@ if (VOL_SAT,1,0) outputvolsat DAC_L
     swapxy
     delayus      DEL_SUR_BES
     subxy                       # compute 2nd order high pass
-if (TEST_SUM)    memsave      M_LS
+else
+    delayus      DEL_FRONT_BES
+endif
+
+if (TEST_REW,sLS) memsave     M_LS
+
 if (WITH_EQ_S)   biquad       F_SUR_EQ      # equalize eventually with some PEQs 
 if (WITH_DEL)	 delayus	  DEL_LS        # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_LS 
-if (VOL_SAT,1,0) outputvolsat DAC_LS
+if (1-VOL_SAT)   output 	  DAC_LS 
+if (VOL_SAT)     outputvolsat DAC_LS
 
 #-== Left Surround : sectionelse PureAES,only192k
     sectionelse PureAES,only192k    #special case if PureAES and 192k : simplified treatment, just delayed
 
+if (TEST_REW,sALL,sLS)
+    clrxy
+else
     input        LSin
+endif
     delayus      DEL_FRONT_BES       # alignement with Front crossover
 if (WITH_DEL)    delayus      DEL_LS
-if (VOL_SAT,0,1) output       DAC_LS
-if (VOL_SAT,1,0) outputvolsat DAC_LS
+if (1-VOL_SAT)   output       DAC_LS
+if (VOL_SAT)     outputvolsat DAC_LS
 
-DSPPRINTF 1
-#-# CORE 2 : in charge of Right
+
 core PureUSB_or_PureAES
+#-
+#-#### CORE 2 : in charge of Right
 
+if (TEST_REW,sALL,sR) 
+    clrxy
+else
 	input 		 Rin
+endif
+if (MODE_SUB,sR) 
+#-Right channel sub extraction
     copyxy
     biquad       F_FRONT_SUB
     memsave      M_R_SUB
     swapxy
     delayus      DEL_FRONT_BES
     subxy
-if (CENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
-if (TEST_SUM)    memsave      M_R
+else
+    delayus      DEL_FRONT_BES
+endif
+
+if (MODE_SUB,sCENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
+
+if (TEST_REW,sR) memsave      M_R
+
 if (WITH_EQ_F)	 biquad 	  F_FRONT_EQ    # filtering Front Left (EQ)
 if (WITH_DEL)	 delayus	  DEL_R			# adjusting delay for distance
-if (VOL_SAT,0,1) output 	  DAC_R
-if (VOL_SAT,1,0) outputvolsat DAC_R 		# alternative output when ready for "production"
+if (1-VOL_SAT)   output 	  DAC_R
+if (VOL_SAT)     outputvolsat DAC_R 		# alternative output when ready for "production"
 
+DSPPRINTF 2
 #-== Right Surround : section PureAES,not192k
 section PureAES,not192k	        # RS is managed in this core when in Pure AES, to reduce total number of core to reduce impact on AES spdif decoding
 
+if (TEST_REW,sALL,sRS) 
+    clrxy
+else
     input 		 RSin
+endif
+if (MODE_SUB,sRS)
+#-Surround right channel sub extraction
     delayus      DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		 F_SUR_SUB
     memsave      M_RS_SUB        # save low freq    
     swapxy
     delayus      DEL_SUR_BES
-    subxy                       # compute high pass
-if (TEST_SUM)    memsave      M_RS
+    subxy                     # compute high pass
+else
+    delayus      DEL_FRONT_BES
+endif
+
+if (TEST_REW,sRS) memsave     M_RS
+
 if (WITH_EQ_S)   biquad       F_SUR_EQ      # equalize eventually with some PEQs 
 if (WITH_DEL)	 delayus	  DEL_RS        # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_RS
-if (VOL_SAT,1,0) outputvolsat DAC_RS
+if (1-VOL_SAT)   output 	  DAC_RS
+if (VOL_SAT)     outputvolsat DAC_RS
 
 #-== Right Surround: sectionelse PureAES,only192k
     sectionelse PureAES,only192k
 
+if (TEST_REW,sALL,sRS)
+    clrxy
+else
     input        RSin
+endif
     delayus      DEL_FRONT_BES
 if (WITH_DEL)    delayus      DEL_RS
-if (VOL_SAT,0,1) output       DAC_RS
-if (VOL_SAT,1,0) outputvolsat DAC_RS
+if (1-VOL_SAT)   output       DAC_RS
+if (VOL_SAT)     outputvolsat DAC_RS
 
 
-#-# CORE 3 : in charge of Subwoofer only
 core PureUSB_or_PureAES
+#-
+#-#### CORE 3 : in charge of Subwoofer only
 
-if (0) #if (TEST_SUM)
-    #this is to demonstrate that the sum of all signals is OKAY on 5.1 !
-    mixer       DAC_L, DAC_R, DAC_C, DAC_LS, DAC_RS, DAC_Ltm, DAC_Rtm
-    gain        1 #gain_SUM
-    copyxy
-    inputgain   (DAC_SUB,1)
-    outputgain  (REW_SUM, gain_SUM)
-if (TEST_SUM)
-    mixermem    M_L, M_R, M_C, M_LS, M_RS, M_Ltm, M_Rtm, M_SUB
-    outputgain  (REW_SUM, gain_SUM)
-if #end of if section
+if (TEST_REW)      
+    loadmem      M_SUB   #-compute SUM with SUB
+    if (TEST_REW,sL)   addmem 	    M_L     #-adding Left
+    if (TEST_REW,sR)   addmem 	    M_R     #-adding Right
+    if (TEST_REW,sLS)  addmem 	    M_LS    #-adding Surround Left
+    if (TEST_REW,sRS)  addmem 	    M_RS    #-adding Surround Right
+    if (TEST_REW,sC)   addmem 	    M_C     #-adding Centre
+    if (TEST_REW,sLtm) addmem 	    M_Ltm   #-adding head Left
+    if (TEST_REW,sRtm) addmem 	    M_Rtm   #-adding head Right
+    output       REW_SUM
+endif
 
-	inputgain 	( LFEin, 10db )
-    delayus     DEL_FRONT_BES
-	addmem 	    M_L_SUB, M_R_SUB, M_C_SUB, M_LS_SUB, M_RS_SUB   # these values are computed later by all other cores
+	inputgain 	( LFEin, 10db )             # get LFE signal from Host and apply the usual 10 db gain
+    delayus     DEL_FRONT_BES               # align with other channels
+if (MODE_SUB,sL)   addmem 	    M_L_SUB
+if (MODE_SUB,sR)   addmem 	    M_R_SUB
+if (MODE_SUB,sC)   addmem 	    M_C_SUB
+if (MODE_SUB,sLS)  addmem 	    M_LS_SUB
+if (MODE_SUB,sRS)  addmem 	    M_RS_SUB
 #-== LFE : section PureAES 
     section PureAES                         # pureAES in first to optimize TEST_SUMing time in PureAES mode
         gain       gain_SUB
         memsave    M_SUB                    # total of subwoofer for LCR+SUR LR
-    	transfer8 8,24	                #feedback to xmos for loopback of AES inputs to 16..23
+if (TEST_REW)      transfer   (8,24)        # just one feedback (also necessary to unmute dac)
+if (1-TEST_REW)    transfer8  (8,24)	    # normal mode : feedback to xmos to enable loopback of AES inputs to 16..23
 #-== LFE : sectionelse (PureUSB)
     sectionelse
-        addmem     M_Ltm_SUB, M_Rtm_SUB
+if (MODE_SUB,sLtm)   addmem     M_Ltm_SUB
+if (MODE_SUB,sRtm)   addmem     M_Rtm_SUB
         gain       gain_SUB
         memsave    M_SUB                    # total of subwoofer for LCR+SUR LR + SURtm LR
-    	transfer ( Lin, REW_LOOPBACK )      #(Lin, Cin) # used during TEST_SUM, to send the Lef signal every where else
+if (TEST_REW)    transfer ( 16, REW_LOOPBACK )      # always provide a basic loopback for REW reference
     section
 if (WITH_EQ_SUB) biquad       F_SUB_EQ      # eventually apply specific biquad filtering for sub
 if (WITH_DEL)	 delayus	  DEL_SUB
-if (VOL_SAT,0,1) output 	  DAC_SUB
-if (VOL_SAT,1,0) outputvolsat DAC_SUB
+if (1-VOL_SAT)   output 	  DAC_SUB
+if (VOL_SAT)     outputvolsat DAC_SUB
 
 
-#-# CORE 4 : in charge of centre
 core PureUSB_or_PureAES
+#-
+#-#### CORE 4 : in charge of centre
 
-if (CENTER_TO_FRONT)            # compute ultra low frequency going to sub (same freq as Front) and complementary high pass
+if (MODE_SUB,sCENTER_TO_FRONT)            # compute ultra low frequency going to sub (same freq as Front) and complementary high pass
+#-center channel sub extraction for front
     input 		Cin 			# get center channel 
     copyxy
     biquad      F_FRONT_SUB
@@ -324,31 +411,53 @@ if (CENTER_TO_FRONT)            # compute ultra low frequency going to sub (same
     delayus     DEL_FRONT_BES
     subxy                       # compute high pass at the same crossover point as front
     memsave     M_C_TEMP
-if
+endif
 
+if (TEST_REW,sALL,sC) 
+    clrxy
+else
 	input 		Cin 			# get center channel 
+endif
+DSPPRINTF 4
+if (MODE_SUB,sC+sCENTER_TO_FRONT)
+#-Centre channel sub extraction
     delayus     DEL_FRONT_BES - DEL_CENTRE_BES
     copyxy
 	biquad 		F_CENTRE_SUB    # extract low freq only.
     memsave     M_C_SUB         # save low freq
-if (CENTER_TO_FRONT) memsub  M_C_TEMP       # M_C_TEMP <= M_C_TEMP - lowfreq (possible because delays are alligned)
-if (CENTER_TO_FRONT) memgain M_C_TEMP, 0.5  # divide by 2 as this will be added to both front speakers
-    swapxy                      # retreive centre channel 
+
+    if (MODE_SUB,sCENTER_TO_FRONT) 
+        memsub  M_C_TEMP       # M_C_TEMP <= M_C_TEMP - lowfreq (possible because delays are alligned)
+        memgain M_C_TEMP, 0.5  # divide by 2 as this will be added to both front speakers
+    endif
+    swapxy                   # retreive centre channel 
     delayus     DEL_CENTRE_BES  # after this delay, total delay = DEL_FRONT_BES
-    subxy                       # compute high pass
-if (TEST_SUM)    memsave      M_C           # save high freq of centre channel for futur sumation
+    subxy                      # compute high pass
+else
+    delayus     DEL_FRONT_BES
+endif
+
+if (TEST_REW,sC) memsave      M_C           # save high freq of centre channel for futur sumation
+
 if (WITH_EQ_C)   biquad       F_CENTRE_EQ   # equalize eventually with some PEQs 
 if (WITH_DEL)    delayus      DEL_C         # distance correction
-if (VOL_SAT,0,1) output       DAC_C
-if (VOL_SAT,1,0) outputvolsat DAC_C 	    # alternative output when ready for "production"
+if (1-VOL_SAT)   output       DAC_C
+if (VOL_SAT)     outputvolsat DAC_C 	    # alternative output when ready for "production"
 
 
 ## management of the Surround speakers in Pure USB
 
-#-# CORE 5 : in charge of LS and Ltm , this one ONLY activated in pureUSB
 core PureUSB		
+#-
+#-#### CORE 5 : in charge of LS and Ltm , this one ONLY activated in pureUSB
 
+if (TEST_REW,sALL,sLS)
+    clrxy
+else
 	input 		LSin
+endif
+if (MODE_SUB,sLS)
+#-Surround left channel sub extraction
     delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
@@ -356,17 +465,28 @@ core PureUSB
     swapxy
     delayus     DEL_SUR_BES
     subxy                       # compute 2nd order high pass
-if (TEST_SUM)   memsave      M_LS
+else
+    delayus     DEL_FRONT_BES
+endif
+
+if (TEST_REW,sLS) memsave    M_LS
+
 if (WITH_EQ_S)                
     section PureUSB,not192k
     biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     section
-if # end of previous if
+endif
 if (WITH_DEL)	 delayus	  DEL_LS        # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_LS 
-if (VOL_SAT,1,0) outputvolsat DAC_LS
+if (1-VOL_SAT)   output 	  DAC_LS 
+if (VOL_SAT)     outputvolsat DAC_LS
 
+if (TEST_REW,sALL,sLtm)
+    clrxy
+else
 	input 		Ltmin
+endif
+if (MODE_SUB,sLtm)
+#-Surround head left channel sub extraction
     delayus     DEL_FRONT_BES - DEL_SURtm_BES 
     copyxy
 	biquad		F_SURtm_SUB
@@ -374,20 +494,31 @@ if (VOL_SAT,1,0) outputvolsat DAC_LS
     swapxy
     delayus     DEL_SURtm_BES
     subxy                      # compute 2nd order high pass
-if (TEST_SUM)   memsave      M_Ltm
+else
+    delayus     DEL_FRONT_BES
+endif
+
+if (TEST_REW,sLtm) memsave   M_Ltm
 if (WITH_EQ_Stm)
     section PureUSB,not192k
-    biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
+    biquad      F_SURtm_EQ        # equalize eventually with some PEQs , only up to 96k
     section
-if #end of if
+endif
 if (WITH_DEL)	 delayus	  DEL_Ltm       # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_Ltm
-if (VOL_SAT,1,0) outputvolsat DAC_Ltm
+if (1-VOL_SAT)   output 	  DAC_Ltm
+if (VOL_SAT)     outputvolsat DAC_Ltm
 
-#-# CORE 6 : in charge of RS and Rtm , this one ONLY activated in pureUSB
 core PureUSB
+#-
+#-#### CORE 6 : in charge of RS and Rtm , this one ONLY activated in pureUSB
 
+if (TEST_REW,sALL,sRS)
+    clrxy
+else
 	input 		RSin
+endif
+if (MODE_SUB,sRS)
+#-Surround right channel sub extraction
     delayus     DEL_FRONT_BES - DEL_SUR_BES
     copyxy
 	biquad		F_SUR_SUB
@@ -395,38 +526,55 @@ core PureUSB
     swapxy
     delayus     DEL_SUR_BES
     subxy                       # compute high pass
-if (TEST_SUM)   memsave      M_RS
+else
+    delayus     DEL_FRONT_BES
+endif
+
+if (TEST_REW,sRS) memsave    M_RS
+
 if (WITH_EQ_S)    
     section PureUSB,not192k
     biquad      F_SUR_EQ        # equalize eventually with some PEQs 
     section
-if
+endif
 if (WITH_DEL)	 delayus	  DEL_RS        # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_RS
-if (VOL_SAT,1,0) outputvolsat DAC_RS
+if (1-VOL_SAT)   output 	  DAC_RS
+if (VOL_SAT)     outputvolsat DAC_RS
 
+if (TEST_REW,sALL,sRtm)
+    clrxy
+else
 	input 		Rtmin
-    delayus     DEL_FRONT_BES - DEL_SURtm_BES 
+endif
+if (MODE_SUB,sRtm)
+#-Surround head right channel sub extraction
+    delayus     DEL_FRONT_BES - DEL_SURtm_BES
     copyxy
 	biquad		F_SURtm_SUB
     memsave     M_Rtm_SUB
     swapxy
     delayus     DEL_SURtm_BES
     subxy                           # compute high pass
-if (TEST_SUM)   memsave      M_Rtm
+else
+    delayus     DEL_FRONT_BES
+endif
+
+if (TEST_REW,sRtm) memsave   M_Rtm
 if (WITH_EQ_Stm)
     section PureUSB,not192k
     biquad      F_SURtm_EQ        # equalize eventually with some PEQs 
     section
-if
+endif
 if (WITH_DEL)	 delayus	  DEL_Rtm       # distance allignement
-if (VOL_SAT,0,1) output 	  DAC_Rtm
-if (VOL_SAT,1,0) outputvolsat DAC_Rtm 
+if (1-VOL_SAT)   output 	  DAC_Rtm
+if (VOL_SAT)     outputvolsat DAC_Rtm 
 
-#-#### DELAYS PRE-FILTERING to allign phases
-#-#### Delay Front Speakers LV4 = [DEL_FRONT_BES]us
-#-#### Delay Centre speaker LV4 = [DEL_CENTRE_BES]us
-#-#### Delay Surround speakers LV4 = [DEL_SUR_BES]us
-#-#### Delay Surround Head Speakers LV4 = [DEL_SURtm_BES]us
+core USB_AES
+    # all signals passthrough, no any treatment !!!
+    transfer8   (8,24)
+    transfer8   (16,0)
 
+coreaes PureAES,onlyAES1      # this statement is used to launch the first spdif decoding core (on AES2)  
+coreaes PureAES,onlyAES1      # this statement is used to launch the second spdif decoding core (on AES3) 
+                              # AES4 can be used as a stereo channel, selecting PureAES4 on the display
 end
