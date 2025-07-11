@@ -17,11 +17,11 @@ sL 1 ; sR 2 ; sC 4 ; sLS 8 ; sRS 16 ; sLtm 32 ; sRtm 64 ; sALL 127 ; sCENTER_TO_
 
 # program features, can be enabled/toggled by user
 
-TEST_REW        = sL+sR+sC        # send outputs to REW (for measurement) instead of DACs and activate given channels
+TEST_REW        = sL+sR+sC+sLS+sRS        # send outputs to REW (for measurement) instead of DACs and activate given channels
 
 # define which channel must be routed to SUB woofer and if CENTER residual LF should go to Front
 # as an example, if front are "large" then remove "sL + sR" from equation below
-MODE_SUB        = 0 #sL #+ sR #+ sC + sLS + sRS + sLtm + sRtm # + sCENTER_TO_FRONT
+MODE_SUB        = sL+sR+sC #sL #+ sR #+ sC + sLS + sRS + sLtm + sRtm # + sCENTER_TO_FRONT
 # definition of the final gain applied on the SUB (as it will sum all lowfreq channels)
 gain_SUB        = 1
 
@@ -112,8 +112,8 @@ if (Fc_SUR    - Fc_FRONT,65536) ERROR # Fc_SUR must be higher or equal to Fc_FRO
 if (Fc_SURtm  - Fc_FRONT,65536) ERROR # Fc_SURtm must be higher or equal to Fc_FRONT
 
 #-BESSEL filters order 4 definition
-cbe4    1.114   # magic coefficient to shift crossover point for LV4 filters
-dbe4    510000  # magic numerator to get bessel4 group delay with formula gdbe4 = dbe4 / ( fc * cbe4 )
+cbe4    1.112   # magic coefficient to shift crossover point for LV4 filters
+dbe4    509550  # magic numerator to get bessel4 group delay with formula gdbe4 = dbe4 / ( fc * cbe4 )
 
 if (MODE_SUB,sL+sR)                   F_FRONT_SUB		LPBE4( Fc_FRONT * cbe4 )
 if (MODE_SUB,sC+sCENTER_TO_FRONT )    F_CENTRE_SUB	    LPBE4( Fc_CENTRE * cbe4 )
@@ -216,24 +216,27 @@ onlyAES1    b11100000
 core PureUSB_or_PureAES
 #-
 #-#### CORE 1 : in charge of Left
-if (TEST_REW,sALL,sL)
-    clrxy
-else
-	input 		 Lin
-endif
-if (MODE_SUB,sL)
+if (TEST_REW,sALL,sL)   # if TEST_REW activated by Left speaker bit is 0
+    clrxy               # then just clear the accumulator
+else                    # in all other cases
+	input 		 Lin    # load the value of the Left channel (from USB Host or PureAES)
+endif                   # all done
+if (MODE_SUB,sL)        # if the Left speaker is expected to use subwoofer for low freq
 #-Left channel sub extraction
     copyxy
     biquad       F_FRONT_SUB
     memsave      M_L_SUB       # save low freq of the front left signal
     swapxy
-endif
     delayus      DEL_FRONT_BES
-if (MODE_SUB,sL) subxy                      # compute front high pass (substractive filter)
+    subxy                      # compute front high pass (substractive filter)
+else
+    delayus      DEL_FRONT_BES
+endif
+
+if (MODE_SUB,sCENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
 
 if (TEST_REW,sL) memsave      M_L
 
-if (MODE_SUB,sCENTER_TO_FRONT) addmem   M_C_TEMP      # eventually add the residual center low freq
 if (WITH_EQ_F)	 biquad 	  F_FRONT_EQ	# eventually filtering Front Left (EQ)
 if (WITH_DEL)	 delayus	  DEL_L			# adjusting delay for distance
 if (1-VOL_SAT)   output 	  DAC_L
@@ -342,7 +345,7 @@ if (VOL_SAT)     outputvolsat DAC_RS
 
 #-== Right Surround: sectionelse PureAES,only192k
     sectionelse PureAES,only192k
-
+    # very basic treatment here, just delay
 if (TEST_REW,sALL,sRS)
     clrxy
 else
@@ -406,11 +409,11 @@ if (MODE_SUB,sCENTER_TO_FRONT)            # compute ultra low frequency going to
     input 		Cin 			# get center channel 
     copyxy
     biquad      F_FRONT_SUB
-    memsave     M_C_SUB         # save very low freq going to the sub anyway
+    memsave     M_C_SUB         # save very low freq going to the sub in all cases
     swapxy
     delayus     DEL_FRONT_BES
     subxy                       # compute high pass at the same crossover point as front
-    memsave     M_C_TEMP
+    memsave     M_C_TEMP        # this signal will partly go to front speakers
 endif
 
 if (TEST_REW,sALL,sC) 
@@ -418,15 +421,15 @@ if (TEST_REW,sALL,sC)
 else
 	input 		Cin 			# get center channel 
 endif
-DSPPRINTF 4
-if (MODE_SUB,sC+sCENTER_TO_FRONT)
+
+if (MODE_SUB, sC + sCENTER_TO_FRONT )
 #-Centre channel sub extraction
     delayus     DEL_FRONT_BES - DEL_CENTRE_BES
     copyxy
 	biquad 		F_CENTRE_SUB    # extract low freq only.
     memsave     M_C_SUB         # save low freq
 
-    if (MODE_SUB,sCENTER_TO_FRONT) 
+    if ( MODE_SUB, sCENTER_TO_FRONT ) 
         memsub  M_C_TEMP       # M_C_TEMP <= M_C_TEMP - lowfreq (possible because delays are alligned)
         memgain M_C_TEMP, 0.5  # divide by 2 as this will be added to both front speakers
     endif
