@@ -40,7 +40,7 @@
 				
 			},{
 				"name": "keyword.function.avdsp",
-				"match": "\\b(tile|param|core|section|sectionelse|coreaes|end|send|receive|if)\\b"
+				"match": "\\b(tile|param|core|section|sectionelse|coreaes|end|send|receive|if|else|elseif|endif)\\b"
 			}]
 		},
 		"avdspfilt": {
