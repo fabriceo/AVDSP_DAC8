@@ -36,11 +36,11 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.avdsp",
-				"match": "\\b(nop|input|output|transfer|transfer2|transfer8|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatevol|saturategain|delayone|delayus|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquad8|convol|warpconvol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|thdcomp|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate|memclr|swapmem|addmem|memadd|submem|memsub|mulmem|divmem|avgmem|memavg|memneg|memvalue|mixermem|memsave|loadmem|meminput|memgain|instructions|priorityon|priorityoff)\\b"
+				"match": "\\b(nop|input|inputx|inputy|inputxy|output|outputx|outputy|outputxy|transfer|transfer2|transfer8|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|gainx|gainy|gainxy|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatexy|saturatevol|saturatevolxy|saturategain|delayone|delayus|delayusx|delayusy|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquadxy|biquad8|convol|warpconvol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|thdcomp|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate|memclr|swapmem|addmem|memadd|submem|memsub|mulmem|divmem|avgmem|memavg|memneg|memvalue|mixermem|memsave|loadmem|memsavexy|loadmemxy|meminput|memgain|instructions|priorityon|priorityoff|pipeline|pipelinevolsat)\\b"
 				
 			},{
 				"name": "keyword.function.avdsp",
-				"match": "\\b(tile|param|core|section|sectionelse|coreaes|end|send|receive|if|else|elseif|endif)\\b"
+				"match": "\\b(tile|param|core|section|sectionelse|coreextern|end|send|receive|if|else|elseif|endif)\\b"
 			}]
 		},
 		"avdspfilt": {
