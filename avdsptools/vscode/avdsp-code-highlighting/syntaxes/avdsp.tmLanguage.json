@@ -29,14 +29,14 @@
 				}
 			]},
 		{	"name": "storage.type.avdsp",
-			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8|DSPFSMIN|DSPFSMAX|DSPFSDYN|DSPMANT|DSPFLOAT|DSPCLOCK|DSPXS2|DSPXS3|DSPCOND|DSPPRINTF)\\b"
+			"match": "\\b(MEMORY|TAPS|VALUE|VALUEINT|DRCIN|DRCOUT|FILTER|FILTER8|DSPFSMIN|DSPFSMAX|DSPFSDYN|DSPMANT|DSPFLOAT|DSPCLOCK|DSPXS2|DSPXS3|DSPCOND|DSPPRINTF|DSPSERIAL|DSPSYMBOLS)\\b"
 		}
 		],
 	"repository": {
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.avdsp",
-				"match": "\\b(nop|input|inputx|inputy|inputxy|output|outputx|outputy|outputxy|transfer|transfer2|transfer8|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|gainx|gainy|gainxy|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatexy|saturatevol|saturatevolxy|saturategain|delayone|delayus|delayusx|delayusy|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquadxy|biquad8|convol|warpconvol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|thdcomp|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate|memclr|swapmem|addmem|memadd|submem|memsub|mulmem|divmem|avgmem|memavg|memneg|memvalue|mixermem|memsave|loadmem|memsavexy|loadmemxy|meminput|memgain|instructions|priorityon|priorityoff|pipeline|pipelinevolsat)\\b"
+				"match": "\\b(nop|input|inputx|inputy|inputxy|output|outputx|outputy|outputxy|transfer|transfer2|transfer8|inputgain|outputgain|outputtpdf|outputvol|outputvolsat|mixer|mixergain|gain|gainx|gainy|gainxy|clip|clrxy|swapxy|copyxy|copyyx|addxy|addyx|subxy|subyx|mulxy|mulyx|divxy|divyx|avgxy|avgyx|negx|negy|shift|valuex|valuey|saturate|saturatexy|saturatevol|saturatevolxy|saturategain|delayone|delayus|delayusx|delayusy|delaydpus|delayusfbmix|savexmem|loadxmem|saveymem|loadymem|dcblock|biquad|biquadx|biquady|biquadxy|biquad8|convol|warpconvol|tpdf|white|sine|square|dirac|integrator|movingavgus|movingavgn|expmovingavg|thdcomp|envpeak|envrms|limiterpeak|limiterrms|limiterpeakhard|compressor|expander|noisegate|memclr|swapmem|addmem|memadd|submem|memsub|mulmem|divmem|avgmem|memavg|memneg|memvalue|mixermem|memsave|loadmem|memsavexy|loadmemxy|meminput|memgain|instructions|priorityon|priorityoff|pipeline|pipelinevolsat)\\b"
 				
 			},{
 				"name": "keyword.function.avdsp",

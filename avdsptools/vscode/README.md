@@ -3,7 +3,7 @@
 
 This repository contains an extension for Visual Studio Code, to provide code highlighting when editing a file with extension .avd or .avdsp
 
-keywords core,end, section and MEMORY are shown in light blue.
+for example, keywords core, end, section and MEMORY are shown in light blue.
 all dsp functions like input, biquad, delayus... are shown in pink
 all filter names like LPLR4, PEAK ... are shown in light blue.
 
@@ -13,6 +13,5 @@ Create a new file with extension .avd or .avdsp, or open one of the provided exa
 
 the file **tasks.json** contains simple declaration for launching dspcreate and xmosusb from the menu "terminal" in vscode and is a quick way to analyse the avdsp programs and upload them directly into the dac without opening a terminal session and typing commands.
  To install this file, go in your working folder where you have your avdsp files and copy tasks.json inside the folder .vscode which should be there, otherwise create it first.
- 
 
-January 18th,2025
+updated August 11th,2025

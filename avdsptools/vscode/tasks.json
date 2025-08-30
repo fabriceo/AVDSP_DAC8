@@ -6,7 +6,7 @@
             "type": "shell",
             "command": "bash",
             "args": [
-                "dspcreate -dspformat 2 -dsptext ${fileDirname}"
+                "dspcreate ${fileDirname}"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -22,7 +22,7 @@
             "type": "shell",
             "command": "bash",
             "args": [
-                "dspcreate -dspformat 2 -dsptext ${fileDirname} -binfile ${fileDirname}.bin"
+                "dspcreate ${fileDirname} -binfile ${fileDirname}.bin"
             ],
             "options": {
                 "cwd": "${fileDirname}"

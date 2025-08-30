@@ -11,6 +11,7 @@ Community users are welcome to directly use Github to report issues as long as t
 ## Q & A
 ### 1) Is this DAC8 firmware officially supported by OktoResearch ?
 The firmware has been tested by Okto research and is recognized to perform as good as the original 1.60 version. It can be installed by the end user with the Okto research DFU utility or xmosusb utility without impacting the warranty conditions.
+version V1.61 and V1.62 are supported by avdsp project lead, or by the community of users, usually on ASR discussion forum.
 
 ### 2) This looks complex ! why not providing a graphic user interface ?
 The original goal was to extend the capabilities of the DAC8 products by leveraging the unused power of the embded XU216 cpu. the AVDSP project was a good way to provide DSP capabilities with reasonable efforts but its flexibility and the language oriented approach are not really compatible with a static graphic interface.
@@ -32,9 +33,11 @@ When loading or launching a DSP program, the DAC8 product will test the DSP trea
 DSD audio stream cannot be treated as such by a DSP, therefore any DSD audio signal will be converted to silence when a DSP program is selected in the filter menu. It is usually possible to convert DSD music program as a PCM program on the Host player.
 
 ### 8) any FIR or convolution possible ?
-Unfortunately the XMOS XU216 does not provide FIR accelerator and this firmware will not provide FIR filtering capabilities. Recursive IIR filters have to be used instead. Some tricks like all-pass filtering or subtractive filtering can be used to linearize phase to some extend.
+Unfortunately the XMOS XU216 does not provide FIR accelerator and the firmware V1.61 does not provide FIR filtering capabilities. Recursive IIR filters have to be used instead. Some tricks like all-pass filtering or subtractive filtering can be used to linearize phase to some extend.
+version 1.62 provides FIR and warped FIR capabilities, and moving average filter support. the routines are highly optimized but still a FIR tap requires 3 cpu instructions and a warped FIR TAP requires 5.25 instructions. at 96k and with 20% overclocking, this gives possibility to execute 1800 FIR Taps or 1000 warped FIR Taps which might be good enough for multichannel loudspeaker equalization.
 
 ### 9) how powerfull is this ? is it enough for my use case ?
-The firmware is enabled up to 192Khz sampling rate but this is a challenging limit for this processor. In short at 192k it is possible to apply 6 biquads and 1 delay line on 8 channels. At 96k we have a more comfortable 20 biquads capabilities for 8 channels.
+The firmware V1.61 is enabled up to 192Khz sampling rate but this is a challenging limit for this processor. In short at 192k it is possible to apply 6 biquads and 1 delay line on 8 channels. At 96k we have a more comfortable 20 biquads capabilities for 8 channels.
+version 1.62 provides twice this performance and even a bit more when using overclocking
 
-may 5,2024
+updated August 11th, 2025

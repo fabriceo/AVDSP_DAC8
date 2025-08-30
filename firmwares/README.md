@@ -11,7 +11,7 @@ These firmwares are created form the original source code and provide the exact 
 The front panel will recognize a dsp-enabled firmware version and will show a specific entry in the **Filter** menu to select a dsp program between 1 and 4 (or 0 to switch dsp off).
 Once flashed, the dsp firmwares comes on top of the factory firmware, the original factory firmware is not replaced as such.
 In case of issue during the flash or upgrade process, the original factory firmware is automaticaly restored.
-Once installed, the behaviour of the audio inputs and outputs of the DAC8PRO or DAC8STEREO product will depend of the dsp program selected in the "filter" menu and become under the entire responsability of the user.
+Once installed, the behaviour of the audio inputs and outputs of the DAC8PRO or DAC8STEREO product will depend of the dsp program selected in the **Filter** menu and become under the entire responsability of the user.
 The manufacturer is not liable for any damage caused to the component (especially loudspeaker drivers) driven by a DAC8PRO or DAC8STEREO configured with a user dsp program.
 
 ## WHICH FIRMWARE TO USE
@@ -30,5 +30,5 @@ but the DSP runtime (opcode interpreter) is available here in the "develop" bran
 the assembly version of the interpreter for XS2 platform is not yet opensource, same for the loader and for the interface with the standard XMOS USB audio application.
 licensing can be discussed with the author easily
 
-November 12th,2024
+updated August 11th, 2025
 

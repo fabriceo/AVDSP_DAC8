@@ -3,7 +3,8 @@
 
 This repository contains documentation for using the utilities of this repository
 
-please read **AVDSP for DAC8_V161.pdf**
+please read **AVDSP for DAC8_V162_rc0.pdf**
 
 
 
+modified August 30th, 2025
