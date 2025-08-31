@@ -1,0 +1,102 @@
+DSPXS2
+#########
+#########  4 test up to 192k (with value 1,2,4,8) :
+#########  test 1 : realistic treatment of 8 chanels spread over 4 cores : 13 biquads maximum per channel
+#########  test 2 : same on 5 cores, using 5th core (remaning mips from I2S core) to delay channels : no real benefit
+#########  test 3 : test max load on 4 cores with special keyword "instructions"
+#########  test 4 : same over 5 cores
+#########
+
+test 1	# select tests with value 1,2,4 or 8
+n 0		# put 0 or a number of dummy instructions for 3rd test (4)
+
+DSPCLOCK 528 # default overclocking 13 biquads x 8
+#DSPCLOCK 552 # to support 14 biquads x 8 (change last LPLR2 for LPLR4 to test it)
+#DSPCLOCK 584 # to support 15 biquads x 8 (change last LPLR2 for LPLR6 to test it)
+#DSPCLOCK 616 # experimental, to support 16 biquads x 8 (change last LPLR2 for LPLR8 to test it)
+
+filt	FILTER HP2(50, 0.7)      PEAK(125, 1, 4db)  PEAK(125, 1, -4db) \
+		PEAK(250, 1, 7db) PEAK(1000, 1, 8db) PEAK(4000, 1, 9db) PEAK(8000, 1, 10db) \  
+		PEAK(250, 1,-7db) PEAK(1000, 1,-8db) PEAK(4000, 1,-9db) PEAK(8000, 1,-10db) \
+		HS2(10000, 1,-3db) LPLR2(20000) 	 # 13 biquads per channel 
+
+if (test,1)
+#-realistic 2x4 crossover running on 4 cores at [DSPCLOCK]mhz
+core
+	inputxy 16,17
+	biquadx filt ; delayusx 100; 
+	biquady filt ; delayusy 100; 
+	outputxy 24,25
+
+core
+	inputxy 16,17
+	biquadx filt ; delayusx 100; 
+	biquady filt ; delayusy 100; 
+	outputxy 26,27
+core
+	inputxy 16,17
+	biquadx filt ; delayusx 100; 
+	biquady filt ; delayusy 100; 
+	outputxy 28,29
+core
+    inputxy 16,17
+	biquadxy filt	# possibility to use biquadxy to apply a single (=same) filter on both channels.
+	delayusx 100; delayusy 100; 
+	outputxy 30,31
+
+endif
+
+if (test,2)
+#-realistic 2x4 crossover running at [DSPCLOCK]mhz on 5 cores, 
+	
+core
+	inputxy 16,17
+	biquadx filt
+	biquady filt
+	outputxy 24,25
+core
+	inputxy 16,17
+	biquadx filt
+	biquady filt 
+	outputxy 26,27
+core
+	inputxy 16,17
+	biquadx filt
+	biquady filt
+	outputxy 28,29
+core
+    inputxy 16,17
+	biquadxy filt	# possibility to use biquadxy to apply a single (=same) filter on both channels.
+	outputxy 30,31
+core
+	inputxy 24,25 ; delayusx 100 ; delayusy 100 ; outputxy 24,25
+	inputxy 26,27 ; delayusx 100 ; delayusy 100 ; outputxy 26,27
+	inputxy 28,29 ; delayusx 100 ; delayusy 100 ; outputxy 28,29
+	inputxy 30,31 ; delayusx 100 ; delayusy 100 ; outputxy 30,31
+endif
+
+
+if (test,4+8)
+if (n) 
+#-Loading each core at [DSPCLOCK]mhz with [n] instructions. 
+#-Results displayed are the number of instructions used in total, including core start-stop
+else
+#-Fully loading each core at [DSPCLOCK]mhz to their limit. 
+#-Results displayed are the max numbers of instructions available per core, considering core start-stop requirements.
+endif
+	core 
+	instructions n
+	core 
+	instructions n
+	core 
+	instructions n
+	core 
+	instructions n
+if (test,8)
+	core 
+	instructions n
+endif
+endif
+
+end
+

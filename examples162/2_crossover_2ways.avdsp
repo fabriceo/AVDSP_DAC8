@@ -1,0 +1,23 @@
+# a mono 2 way crossover 
+DSPPRINTF 2
+include "dac8pro.avd"      # includes definitions for DACx, AESx, USBx ...
+
+# filter declaration
+fc      400
+lowpass     FILTER LPLR4(fc,-3db)  PEAK(  50, 3, -6db) # 3 biquad sections
+highpass    FILTER HPLR4(fc)       PEAK(4000, 2, 3db) 
+
+core
+    input left
+        biquad  lowpass
+    output rew2, dac0               # put value in the 2 memory locations
+
+    input left
+        biquad  highpass
+
+    outputgain (rew3,-3db)          # apply gain for output only, accumulator X not changed
+
+        gain    -3db                # apply a gain on accumulator x
+    output dac1
+
+end

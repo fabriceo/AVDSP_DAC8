@@ -1,0 +1,213 @@
+# This is a comment line starting with "#". Comment can be printed in the console when starting with "#-"
+# This is a cheat sheet for AVDSP programs, showing all possible syntax and instruction.
+#-*** Cheat sheet for avdsp programs ***
+include "dac8pro.avd"         # used to include typical IO constant declaration. up to 3 levels of included file are supported, in firmware as of V1.62 only
+DSPPRINTF 2     # used to define the level of verbose information during compilation
+DSPFSMAX 192000 # upper boundary for filter coefficient generation, and generated code
+#DSPFSMIN 44100 # lower boundary for filter coefficient generation, and generated code, implicit
+DSPMANT 28,56   # any gain or biquad coefficient will be coded as q4.28 between -8.0...+8.0
+                # working 64bits accumulator will be coded q8.56 between -128.0...+128.0 (42dbFS)
+DSPCLOCK 540,496,528,0          # clock definition for DAC8PRO. Cpu in PureUSB, AES176K, AES192K, AES core priority (0..3)
+DSPXS2                          # indicate that the target is for XMOS XS200. Intruction used will be estimated
+DSPCOND 0                       # sepcify a condition to be used for calculating instructions with DSPXS2.
+DSPSYMBOLS 0                    # used to generate (1) or not (0) a symbol table at the end of the binary file.
+  
+#-LINE [DSPLINE]: DSPMANT = [DSPMANT], DSPCLOCK = [DSPCLOCK], DSPCOND = [DSPCOND], DSPFSMIN = [DSPFSMIN], DSPFSMAX = [DSPFSMAX]
+#-Constant definition
+OUT     24
+FC      500
+#-label FC = [FC]  : initial FC value
+FC      ? 1000                  # set fc to 1000 unless it is already set earlier
+#-label FC = [FC]  : FC not changed
+FC      ?= 1000                 # set fc to 1000 even if it was defined earlier
+#-label FC = [FC] : FC changed
+IN      = 0+8                   # an expression requires "=" before it
+OUT3    = OUT+3                 # refering to a label requires "=" before
+OUT5    = OUT.5                 # the value after "." is simply added to the label "OUT"
+OUT4    = OUT[4]                # the value in [] is simply added to the label "OUT". COULD BE MISLEADING, prefer using "."
+Gain    = 1 - 1/2               # using / or * is higher priority than + and - 
+Gain0db = 0DB                   # value can be defined in db, dB, Db or DB, result is converted as 10^(val/20)
+Gain_half = 0.5                 # this is equivalent to -6db
+Gain_fourth = -6db - - - 6dB    # this is equivalent to -12db corresponding to 0.2511
+b254	= b11111110             # exemple of binary number
+octal   o01234567               # octal representation, for geek and purists
+hexa    x1234ABCD               # hexadecimal value 
+x123    123 ; xxx = 1+x123+1    # ! existing labels are always prioritized vs hexa or binary or octal values
+percent 10%                     # equivalent to 0.1
+period  20m                     # equivalent to 0.02
+delay = 1/period
+kk = 0-(period)                 # 4 level of parenthesis now supported
+#-kk=[kk]
+
+#possibility to compile or not a line or next lines
+TEST 1
+if (TEST)  xx=1                 # compile the rest of line and next lines if TEST is not 0
+#-line [DSPLINE] compiled
+if (TEST,1,6,8,16) xx?=2         # compile xx=2 only if TEST bit 0 = 1, and if test bit 1 and bit 2 are 0, OR if TEST bit 3 is 1 and bit 4 is 0
+#-line [DSPLINE] always compiled
+if (TEST,2,9)                   # do not compile because expect TEST bit 1 to be 1 and TEST bit 1 and 3 to be 0 together
+#-line [DSPLINE] never compiled
+else
+#-line [DSPLINE] compiled
+endif                           # restore the normal compilation 
+if (TESTS?)                     # test if a label exist, whith ? operator
+#-line [DSPLINE] not compiled as TESTS label is not defined
+else
+#-line [DSPLINE] compiled as TESTS label is not defined
+endif
+
+#-Core aes specials
+coreextern 1,pureaes+usbaes,fsnot192k    # activate a conditional aes core,only when sampling rate below 192k
+#-Core definition
+core                                # define a new core, without conditions
+
+core fs192k, 0                      #define a new core only if the 2 conditions are met : first represent possible bits expected to be 1, second represents all bits expected to be 0, multiple conditions possible on the line
+    priorityon                      # experimental : force core to be in high priority mode
+    priorityoff                     # experimental : force core to come back in its default non priority mode
+    instructions 100                #force the CPU to consume 100 instructions
+    instructions                    #compute the number of remianing core instructions
+#-Section definition
+    section fs192k, 0               #define a section executed only if the 2 conditions are met, as for a core, multiple conditions possibles
+    sectionelse fs96k               #these conditions will be tested if previous are wrong
+    sectionelse                     #comes here if any section above was false
+    section                         #end of previous section (or new one but only when parameters given)
+
+#-inputs, outputs, transfer and mixer
+    input IN ; inputx IN ; inputy IN ; inputxy 1,2  #load memory location into accumulator X or Y or X and Y
+    inputgain (IN,Gain)             #same with a gain on it
+    output OUT, OUT3, OUT4          #output accumulator X into one or more memory locations
+    outputx OUT, OUT3, OUT4         #same as output
+    outputy OUT, OUT3, OUT4         #output accumulator Y into one or more memory locations
+    outputxy OUT.1, OUT.2           #output accumulator X and Y in the 2 memory locations
+    outputvol   OUT3, OUT.4         #same but apply master volume before
+    outputvolsat OUT, OUT[3]        #same but verify saturation and apply reduction eventually, and master volume
+    outputtpdf OUT                  #output the accumulator to a memory location and add dithering
+    outputgain (OUT,Gain_fourth)    #output accumulator X in a memory location with a gain
+    transfer (IN, OUT) (IN,OUT)     #transfer from a memory location to another, multiple
+    transfer2 IN, OUT               #transfer 2 memory locations to another location
+    transfer8 IN, OUT               #transfer 8 memory locations to another location
+    mixer IN, IN+1, IN+2            #load and summ all the inputs provided on the line. result is NOT scaled, original X accumulator is not added.
+    mixergain (IN,Gain_half) (IN+1,0.25) (IN+2, 0db)    #load aeach provided input, apply a gain and summ them all
+
+#-memory definition and access 
+size    2
+SAMPLE MEMORY size
+
+    savexmem SAMPLE[0] ; memsave SAMPLE.0 ; memsavexy SAMPLE
+    saveymem SAMPLE[1]
+    loadxmem SAMPLE ; loadmem SAMPLE ; loadmemxy SAMPLE
+    loadymem SAMPLE.1
+
+#-function on accumulator X and Y
+    clrxy ; copyxy ; copyyx ; swapxy
+    addxy ; addyx ; subxy ; subyx
+    avgxy ; avgyx ; negx  ; negy
+    mulxy ; mulyx ; divxy ; divyx
+    valuex 2.3
+    valuey 3.14
+
+#-functions using X or Y as a source and destination
+    gain Gain ; gainx Gain  # apply a gain or reduction on the signal (-8 min .. +8 max)on accumulator X
+    gainy Gain              # same on Y accumulator
+    gainxy Gain             # same on both X and Y accumulator
+    gainxy Gain0db, Gain    # apply respective gains on X and Y in a single instruction
+    clip -1db               # clip the signal (positive and negative) with this value
+    delayus 100             # delay the signal by n microseconds. Only on 32bits MSB of X accumulator
+    delayusx 100            # same as delayus
+    delayusy 100            # same as delayusx but on accumulator Y
+    delaydpus 100           # same but dual precision (keeps 64bits precision)
+    delayone                # delay the signal by 1 sample only. Usefull when using memory across cores
+    saturate                # detect saturation and apply reduction eventually
+    saturatexy              # detect saturation and apply reduction eventually, on both accumulator X and Y
+    saturategain Gain       # apply a gain/reduction and execute saturate
+    saturatevol             # same as saturate but depending on master volume
+    saturatevolxy           # same as saturate but on both accumulator X and Y
+    tpdf 23                 # initialize dithering with n bits and return triangular noise in X
+    white                   # generate whitenoise in X (requires tpdf instruction somewhere)
+    delayusfbmix 100, 100%, 20%, 50%, 50%   # delay, %source, %feedback, %delayed, %mix
+    integrator              # integrate the signal, includes a dcblock
+    movingavgus 100         # moving average during n microseconds
+    movingavgn 20           # moving average n samples
+    expmovingavg 0.9        # exponential moving average with alpha (yn=yn-1 + alpha*(xn-yn-1))
+    thdcomp -60db,-80db     # add H2 and H3 harmonics
+
+#-biquad filter definition and filtering function
+filter  LPLR4(FC)                   # direct declaration of multiple filters on a ligne or multiple lines with "\"
+filt2   FILTER  HP1(FC) LS1(FC*2)   # same result with more explicit and prefered syntax
+
+   biquad filter ; biquadx filter ; # apply filter on the X accumulator
+   biquady filter                   # apply filter on the Y accumulator
+   biquadxy filter                  # apply a single (=same) filter on both accumulators X and Y 
+
+Q = 1 ; G = -3db
+
+#-list of all supported filters.
+#remark : \ is used to continue definition of a single group of filter on the next line
+#remark2: all filters LP,HP,AP accept an optional gain parameter before the closing bracket, after a coma "," separator
+
+#-Bessel filters
+bessel_lowpass  LPBE2(FC) LPBE3(FC) LPBE4(FC) LPBE6(FC) LPBE8(FC)
+bessel_highpass HPBE2(FC) HPBE3(FC) HPBE4(FC) HPBE6(FC) HPBE8(FC)
+bessel_at_3db   LPBE3db2(FC) LPBE3db3(FC) LPBE3db4(FC) LPBE3db6(FC) LPBE3db8(FC) \
+                HPBE3db2(FC) HPBE3db3(FC) HPBE3db4(FC) HPBE3db6(FC) HPBE3db8(FC)
+#-butterworth filters
+butterworth     LPBU2(FC) LPBU3(FC) LPBU4(FC) LPBU6(FC) LPBU8(FC) \
+                HPBU2(FC) HPBU3(FC) HPBU4(FC) HPBU6(FC) HPBU8(FC)
+#-Linkwitz Riley
+lr              LPLR2(FC) LPLR3(FC) LPLR4(FC) LPLR6(FC) LPLR8(FC) \
+                HPLR2(FC) HPLR3(FC) HPLR4(FC) HPLR6(FC) HPLR8(FC) 
+#-Other filters
+firstorder      LP1(FC) HP1(FC) AP1(FC) LS1(FC,G) HS1(FC,G) 
+secondorder     LP2(FC,Q) HP2(FC,Q) AP2(FC,Q) LS2(FC,Q,G) HS2(FC,Q,G) \
+                BPQ(FC,Q,G) BP0DB(FC,Q) PEAK(FC,Q,G) NOTCH(FC,Q,G) LT(FC,Q,FC,Q,G)
+
+core
+
+m  MEMORY 1
+m2 MEMORY 1
+m3 MEMORY 1
+
+# functions aiming to extend Y register to unlimited memory locations
+    memclr m            # mem = 0
+    swapmem m           # X <- mem, mem <- X
+    addmem m, m2, m3    # X = X + mem + ...
+    mixermem m,m2,m3    # X = mem + ...
+    memadd m            # mem = mem + X
+    submem m, m2, m3    # X = X - mem - ...
+    memsub m            # mem = mem - X
+    avgmem m            # X = X/2 + mem /2
+    memavg m            # mem = mem/2 + X/2
+    memneg m            # mem = -mem
+    mulmem m            # X = X * mem
+    divmem m            # X = X / mem
+    memsave m           # mem = X, same as savexmem
+    loadmem m           # X = mem, same as loadxmem
+    memvalue m,4.0      # mem = value 32bits -8..+8
+    meminput m,16       # mem = input 16
+    memgain m,3db       # mem = mem * gain
+
+
+impulse     TAPS    -0.5,       # backslash "\" is not needed when TAPS are described on multiple lines.
+                    1.0,-0.5
+impfile     TAPS "impulse.txt"
+fake44k     TAPS 0
+fake48k     TAPS 0
+include "impulse101.taps"      # declare imp101 with 101 taps from a file
+
+    convol fake44k,fake48k,impulse,impfile  # convolution using 4 different impulse depending on frequency 44k1, 48k, 88k2, 96k
+
+lambda  0.75
+    warpconvol (0,fake44k),(0,fake48k),(0,impulse),(lambda,impfile)
+
+#not implemented yet:
+    pipeline IN,Gain,OUT,filter,delay # execute instructions equivalent to load, gain, biquad, delay, output. filter and delay are optional
+    pipelinevolsat IN,Gain,OUT,filter,delay # same as pipeline, integrating saturation detection and volume reduction if required
+
+
+coreextern 1,1,0    # used to load a core with AES/SPDIF decoding (1) and with conditions 1,0 (as for core declaration)
+
+tile    # tile keyword is used to create other(s) DSP program in same bin file, for multiprocessor purpose. only used in futur versions above V1.62
+
+#-final end statement
+end     
+everything below is ignored !

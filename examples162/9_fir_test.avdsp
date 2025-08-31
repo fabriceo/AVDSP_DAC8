@@ -1,0 +1,11 @@
+DSPPRINTF 3
+fake	TAPS	0
+imp48k	TAPS 	"fir48k_2k_3k_60db_59.txt"
+imp96k	TAPS 	"fir96k_2k_3k_60db_117.txt"
+L	= -0.34
+core
+	input 16
+    warpconvol (0,fake),(L,imp48k),(0,fake),(L,imp96k)
+    output 25
+end
+

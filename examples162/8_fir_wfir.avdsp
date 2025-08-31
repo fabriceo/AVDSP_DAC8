@@ -1,0 +1,40 @@
+# showing FIR and Warped FIR possibilities
+DSPFSMAX 96000
+
+left 16 ; right 17
+rew     23
+
+imp1	TAPS	1
+imp2	TAPS	0.5, 0.5
+imp21	TAPS	0.032,0.025,0,-0.032,-0.053,-0.043,0,0.075,0.159,0.225,0.25,0.225,0.159,0.075,0,-0.043,-0.053,-0.032,0,0.025,0.032
+
+include "impulse101.taps"
+#l	= -0.42		# x 2
+#l	= 0.0		# normal
+#l	= 0.35		# / 2
+#l	= 0.62		# / 4
+#l	= 0.79		# / 8
+l	= 0.9		# / 16
+
+core    # 354 inst
+		input 16
+        output rew.1
+		convol imp1,imp1,imp1,imp101
+        output rew.2
+
+core    # 563 inst
+		input 16
+		warpconvol (l,imp1),(l,imp1),(l,imp1),(l,imp101)
+		output rew.3
+
+core    # 123 inst
+		input 16
+		convol imp1,imp1,imp1,imp21
+        output rew.4
+
+core    # 173 inst
+		input 16
+		warpconvol (l,imp1),(l,imp1),(l,imp1),(l,imp21)
+        output rew.5
+
+end

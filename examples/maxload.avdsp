@@ -1,4 +1,4 @@
-## maximum cpu load
+## maximum cpu load V1.61
 ## for 4 cores:
 ## 192k : input + 10 biquad section  + delaydpus + output per core
 ##  96k : input + 24 biquad section + delaydpus + output per core 

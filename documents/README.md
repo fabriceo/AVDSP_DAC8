@@ -3,7 +3,7 @@
 
 This repository contains documentation for using the utilities of this repository
 
-please read **AVDSP for DAC8_V162_rc0.pdf**
+please read **AVDSP for DAC8_V162_0.pdf**
 
 
 

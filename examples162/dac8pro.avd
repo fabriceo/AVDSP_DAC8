@@ -1,0 +1,120 @@
+### IO definitions for DAC8PRO
+### each channels between 0..7 or 1..8
+IO_numbering ? 0  # 0 or 1 to define the IO numbering starting point (0..7 or 1..8)
+#-file dac8pro.avd : IO declaration starting at [IO_numbering]
+DAC		= 0                   # Upper case always start at 0. 
+AES		= 8                   # Upper case always start at 8.
+USBOUT	= 16                  # represents stream sent by USB Host.
+USBHOST = 16                  # represents stream sent by USB Host.
+USBIN	= 24                  # represents stream to send to USB Host.
+
+fromUSB	= IO_numbering+16
+toUSB	= IO_numbering+24
+
+core4exist	x1000           #pattern to detect existence of core4
+core5exist	x2000
+core6exist	x4000
+core7exist	x8000
+
+fs48k		b11100000000    #pattern to detect when DAC8 is in 48k
+fs96k		b11010000000
+fs192k      b10110000000
+fsnot192k	b01000000000
+fsbelow192k b11000000000
+fs96k48k    b00110000000
+
+pureusb		1               #pattern to detect when DAC8 is in PureUSB mode
+usbaes		4
+pureaes		8
+pureaes2	x20
+pureaes3	x40
+pureaes4	x80
+anysource	15
+
+### to DAC outputs
+
+dac		= DAC - IO_numbering
+if (1-IO_numbering) dac0 = dac.0
+dac1	= dac.1
+dac2	= dac.2
+dac3	= dac.3
+dac4	= dac.4
+dac5	= dac.5
+dac6	= dac.6
+dac7	= dac.7
+if(IO_numbering) dac8 = dac.8
+
+### from AES channels
+
+aes		= AES - IO_numbering
+if (1-IO_numbering) aes0	= aes.0            #proposed naming for memory attached to AES inputs
+aes1	= aes.1
+aes2	= aes.2
+aes3	= aes.3
+aes4	= aes.4
+aes5	= aes.5
+aes6	= aes.6
+aes7	= aes.7
+if(IO_numbering) aes8 = aes.8
+
+### form USB host
+
+usbout	= USBOUT - IO_numbering
+if (1-IO_numbering) usbout0 = usbout.0
+usbout1	= usbout.1
+usbout2	= usbout.2
+usbout3	= usbout.3
+usbout4	= usbout.4
+usbout5	= usbout.5
+usbout6	= usbout.6
+usbout7	= usbout.7
+if(IO_numbering) usbout8 = usbout.8
+
+### to USB host
+
+usbin	= USBIN - IO_numbering
+if (1-IO_numbering) usbin0 = usbin.0
+usbin1	= usbin.1
+usbin2	= usbin.2
+usbin3	= usbin.3
+usbin4	= usbin.4
+usbin5	= usbin.5
+usbin6	= usbin.6
+usbin7	= usbin.7
+if(IO_numbering) usbin8	= usbin.8
+
+# rew always between 1..8 to align with REW software channel numbering
+rew     = USBIN - 1
+rew1    = rew.1
+rew2    = rew.2
+rew3    = rew.3
+rew4    = rew.4
+rew5    = rew.5
+rew6    = rew.6
+rew7    = rew.7
+rew8    = rew.8
+
+rewL    = USBOUT.0
+rewR    = USBOUT.1
+rewC    = USBOUT.2
+rewLFE  = USBOUT.3
+
+#-DAC = [DAC], AES = [AES], USBOUT = USBHOST = [USBOUT], USBIN = [USBIN], rewL=[rewL], rewR=[rewR]
+if (IO_numbering)
+#-dac1..8 ([dac1]..[dac8]), aes1..8 ([aes1]..[aes8]), rew1..8 ([rew1]..[rew8]), usbout1..8 ([usbout1]..[usbout8])
+else
+#-dac0..7 ([dac0]..[dac7]), aes0..7 ([aes0]..[aes7]), rew1..8 ([rew1]..[rew8]), usbout0..7 ([usbout0]..[usbout7])
+endif
+
+### various constants
+
+pi		= 3.1415926
+half	= 0.5
+halfdB  = -6db
+one     = 1
+zero    = 0
+muted   = 0
+#-pi = [pi], half = [half], halfdB = [halfdB], one = [one], zero = [zero], muted = [muted]
+
+left 16 ; right 17
+#-left = [left], right = [right]

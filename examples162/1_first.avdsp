@@ -1,0 +1,20 @@
+# a first program for testing principals
+DSPPRINTF 1
+DSPXS2
+fsmax 192
+clock 528 ; inst = clock * 200 / fsmax
+DSPCLOCK clock
+#-set clock [clock]mhz, [inst] instructions available per sample at [fsmax]khz
+
+left    16
+right   17
+rew     23
+dac0    0
+dac1    1
+
+core
+    input left              # load memory 16 in accumulator X
+    output rew.1,dac0       # store accumulator X in memory 24 (reference for REW) and to first dac
+        gain -3db           # apply a -3db reduction on accumulator X
+    output rew.2,dac1       # store accumulator X in memory location 25 (rew channel 2) and to second dac
+end
